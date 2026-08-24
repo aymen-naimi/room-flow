@@ -18,6 +18,18 @@ frontend/.env
 # Logs
 npm-debug.log*
 
+# .NET (backend)
+backend/**/bin/
+backend/**/obj/
+backend/.vs/
+backend/artifacts/
+backend/**/TestResults/
+backend/**/publish/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+
 # Visual Studio Code
 .vscode/
 
