@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="RoomFlow.Api/RoomFlow.Api.csproj" />
   <Project Path="RoomFlow.Application/RoomFlow.Application.csproj" />
+  <Project Path="RoomFlow.Application.Tests/RoomFlow.Application.Tests.csproj" />
   <Project Path="RoomFlow.Domain/RoomFlow.Domain.csproj" />
   <Project Path="RoomFlow.Infrastructure/RoomFlow.Infrastructure.csproj" />
 </Solution>
