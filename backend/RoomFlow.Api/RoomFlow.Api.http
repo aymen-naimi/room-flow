@@ -1,6 +1,0 @@
-@RoomFlow.Api_HostAddress = http://localhost:5205
-
-GET {{RoomFlow.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

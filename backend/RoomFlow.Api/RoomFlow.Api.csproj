@@ -8,7 +8,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RoomFlow.Infrastructure\RoomFlow.Infrastructure.csproj" />
+    <ProjectReference Include="..\RoomFlow.Application\RoomFlow.Application.csproj" />
   </ItemGroup>
 
 </Project>

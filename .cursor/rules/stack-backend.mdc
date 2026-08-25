@@ -1,0 +1,28 @@
+---
+description: Room Flow backend stack and architecture (Clean Architecture, CQRS)
+alwaysApply: true
+---
+
+# Room Flow stack
+
+Do not change this stack. Do not suggest other backend frameworks unless explicitly asked.
+
+## Back-end
+
+- C#, .NET 10, ASP.NET Core Web API
+- Entity Framework Core, LINQ, Dapper
+- MediatR, CQRS, REST APIs
+
+## Architecture
+
+- Clean Architecture: Domain, Application, Infrastructure, Api
+- SOLID principles
+- Microservices: keep a modular backend while the product is a single domain (rooms / bookings); split later only if needed
+
+## Conventions
+
+- Thin REST controllers: send MediatR commands/queries, no direct database access
+- CQRS: commands and queries go through MediatR
+- Default data access: EF Core + LINQ (reads and writes)
+- Dapper: raw SQL only when a query is too heavy or does not map well to EF
+- Dependencies point inward: Api → Application/Infrastructure; Infrastructure implements Application interfaces; Domain has no infrastructure dependencies
