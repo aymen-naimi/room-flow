@@ -1,0 +1,35 @@
+<section class="rooms">
+  <header class="rooms__header">
+    <h1 class="rooms__title">Salles</h1>
+    <p class="rooms__subtitle">Liste des salles disponibles.</p>
+  </header>
+
+  @if (isLoading()) {
+    <p class="rooms__status">Chargement des salles…</p>
+  } @else if (hasError()) {
+    <p class="rooms__status rooms__status--error">Impossible de charger les salles.</p>
+  } @else if (hasRooms()) {
+    <table class="rooms__table">
+      <thead>
+        <tr class="rooms__row">
+          <th class="rooms__heading">Nom</th>
+          <th class="rooms__heading">Capacité</th>
+          <th class="rooms__heading">Emplacement</th>
+          <th class="rooms__heading">Créée le</th>
+        </tr>
+      </thead>
+      <tbody class="rooms__body">
+        @for (room of rooms(); track room.id) {
+          <tr class="rooms__row">
+            <td class="rooms__cell">{{ room.name }}</td>
+            <td class="rooms__cell">{{ room.capacity }}</td>
+            <td class="rooms__cell">{{ room.location }}</td>
+            <td class="rooms__cell">{{ room.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="rooms__status">Aucune salle pour le moment.</p>
+  }
+</section>

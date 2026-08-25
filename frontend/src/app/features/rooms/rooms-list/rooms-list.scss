@@ -1,0 +1,66 @@
+@use 'variables' as tokens;
+
+:host {
+  display: block;
+}
+
+.rooms {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+
+  &__header {
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+
+  &__subtitle {
+    margin: 0.35rem 0 0;
+    color: tokens.$color-text-muted;
+  }
+
+  &__status {
+    margin: 0;
+    color: tokens.$color-text-muted;
+
+    &--error {
+      color: tokens.$color-error;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: tokens.$color-surface;
+    border: 1px solid tokens.$color-border;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  &__heading,
+  &__cell {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid tokens.$color-border;
+  }
+
+  &__heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: tokens.$color-surface;
+    background: tokens.$color-primary;
+    border-bottom-color: tokens.$color-primary;
+  }
+
+  &__body &__row:last-child &__cell {
+    border-bottom: 0;
+  }
+}
