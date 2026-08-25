@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Infrastructure.Persistence;
+using RoomFlow.Infrastructure.Security;
 
 namespace RoomFlow.Infrastructure;
 
@@ -18,6 +20,8 @@ public static class DependencyInjection
 
         services.AddScoped<IRoomReadStore, RoomReadStore>();
         services.AddScoped<IRoomWriteStore, RoomWriteStore>();
+        services.AddScoped<IUserWriteStore, UserWriteStore>();
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 
         return services;
     }

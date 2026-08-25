@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using RoomFlow.Application;
 using RoomFlow.Api;
 using RoomFlow.Infrastructure;
@@ -14,15 +15,31 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("register", httpContext =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueLimit = 0
+            }));
+});
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<RoomNameAlreadyTakenExceptionHandler>();
+builder.Services.AddExceptionHandler<EmailAlreadyTakenExceptionHandler>();
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseCors("frontend");
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
