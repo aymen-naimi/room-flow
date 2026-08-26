@@ -54,8 +54,7 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             });
 
-    options.AddPolicy("register", PerIp);
-    options.AddPolicy("login", PerIp);
+    options.AddPolicy("auth", PerIp);
 });
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();

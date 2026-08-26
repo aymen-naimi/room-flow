@@ -19,7 +19,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [EnableRateLimiting("register")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<UserResponse>> Create(
         [FromBody] CreateUserRequest request,
         CancellationToken cancellationToken)

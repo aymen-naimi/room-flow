@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using RoomFlow.Api.Contracts.Auth;
 using RoomFlow.Api.Contracts.Users;
 using RoomFlow.Application.Features.Auth.Commands.Login;
+using RoomFlow.Application.Features.Auth.Commands.Logout;
 using RoomFlow.Application.Features.Auth.Commands.Refresh;
 
 namespace RoomFlow.Api.Controllers;
@@ -20,7 +21,7 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    [EnableRateLimiting("login")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<LoginResponse>> Login(
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
@@ -30,13 +31,23 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    [EnableRateLimiting("login")]
+    [EnableRateLimiting("auth")]
     public async Task<ActionResult<LoginResponse>> Refresh(
         [FromBody] RefreshRequest request,
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(new RefreshCommand(request.RefreshToken), cancellationToken);
         return Ok(ToResponse(result));
+    }
+
+    [HttpPost("logout")]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> Logout(
+        [FromBody] LogoutRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _sender.Send(new LogoutCommand(request.RefreshToken), cancellationToken);
+        return NoContent();
     }
 
     private static LoginResponse ToResponse(LoginResult result)
