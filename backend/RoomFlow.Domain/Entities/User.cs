@@ -8,4 +8,5 @@ public class User
     public required string FirstName { get; set; }
     public required string LastName { get; set; }
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
