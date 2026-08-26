@@ -1,0 +1,54 @@
+<app-auth-layout title="Créer un compte">
+  <form class="auth__form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline">
+      <mat-label>Prénom</mat-label>
+      <input matInput autocomplete="given-name" formControlName="firstName" />
+      @if (form.controls.firstName.hasError('required')) {
+        <mat-error>Le prénom est requis.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nom</mat-label>
+      <input matInput autocomplete="family-name" formControlName="lastName" />
+      @if (form.controls.lastName.hasError('required')) {
+        <mat-error>Le nom est requis.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" autocomplete="email" formControlName="email" />
+      @if (form.controls.email.hasError('required')) {
+        <mat-error>L'email est requis.</mat-error>
+      } @else if (form.controls.email.hasError('email')) {
+        <mat-error>Entre un email valide.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput type="password" autocomplete="new-password" formControlName="password" />
+      @if (form.controls.password.hasError('required')) {
+        <mat-error>Le mot de passe est requis.</mat-error>
+      } @else if (form.controls.password.hasError('minlength')) {
+        <mat-error>Au moins 8 caractères.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="auth__error" role="alert">{{ message }}</p>
+    }
+
+    <button
+      class="auth__submit"
+      matButton="filled"
+      type="submit"
+      [disabled]="form.invalid || isSubmitting()"
+    >
+      {{ isSubmitting() ? 'Création…' : 'Créer le compte' }}
+    </button>
+
+    <a class="auth__link" routerLink="/login">Déjà un compte ? Se connecter</a>
+  </form>
+</app-auth-layout>

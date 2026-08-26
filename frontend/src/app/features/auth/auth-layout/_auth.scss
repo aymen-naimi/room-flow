@@ -1,0 +1,47 @@
+@use 'variables' as tokens;
+
+:host {
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.auth {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+
+  &__card {
+    width: 100%;
+    max-width: 24rem;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 1rem;
+  }
+
+  &__error {
+    margin: 0 0 0.5rem;
+    color: tokens.$color-error;
+  }
+
+  &__submit {
+    align-self: stretch;
+  }
+
+  &__link {
+    margin-top: 0.75rem;
+    text-align: center;
+    color: tokens.$color-primary;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

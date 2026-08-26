@@ -1,4 +1,28 @@
+@use '@angular/material' as mat;
 @use 'variables' as tokens;
+
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Inter,
+      density: 0,
+    ),
+    $overrides: (
+      primary: tokens.$color-primary,
+      on-primary: tokens.$color-on-primary,
+      error: tokens.$color-error,
+      surface: tokens.$color-surface,
+      on-surface: tokens.$color-text,
+      outline: tokens.$color-border
+    )
+  );
+}
 
 html,
 body {

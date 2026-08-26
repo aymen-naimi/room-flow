@@ -1,0 +1,12 @@
+<div class="main-layout">
+  <header class="main-layout__header">
+    <p class="main-layout__brand">Room Flow</p>
+    @if (user(); as currentUser) {
+      <p class="main-layout__user">{{ currentUser.email }}</p>
+    }
+    <button matButton type="button" (click)="logout()">Déconnexion</button>
+  </header>
+  <main class="main-layout__main">
+    <router-outlet />
+  </main>
+</div>
