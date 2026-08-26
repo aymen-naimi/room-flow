@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RoomFlow.Api.Contracts.Rooms;
 using RoomFlow.Application.Abstractions.Data;
@@ -9,6 +10,7 @@ using RoomFlow.Application.Features.Rooms.Queries.GetRooms;
 namespace RoomFlow.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public sealed class RoomsController : ControllerBase
 {

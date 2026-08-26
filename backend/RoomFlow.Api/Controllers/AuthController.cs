@@ -1,16 +1,20 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using RoomFlow.Api.Contracts.Auth;
 using RoomFlow.Api.Contracts.Users;
+using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Features.Auth.Commands.Login;
 using RoomFlow.Application.Features.Auth.Commands.Logout;
 using RoomFlow.Application.Features.Auth.Commands.Refresh;
+using RoomFlow.Application.Features.Users.Commands.CreateUser;
 
 namespace RoomFlow.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public sealed class AuthController : ControllerBase
 {
     private readonly ISender _sender;
@@ -18,6 +22,21 @@ public sealed class AuthController : ControllerBase
     public AuthController(ISender sender)
     {
         _sender = sender;
+    }
+
+    [HttpPost("register")]
+    [EnableRateLimiting("auth")]
+    public async Task<ActionResult<UserResponse>> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new CreateUserCommand(
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName);
+        var user = await _sender.Send(command, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, ToUserResponse(user));
     }
 
     [HttpPost("login")]
@@ -54,5 +73,8 @@ public sealed class AuthController : ControllerBase
         => new(
             result.AccessToken,
             result.RefreshToken,
-            new UserResponse(result.User.Id, result.User.Email, result.User.FirstName, result.User.LastName));
+            ToUserResponse(result.User));
+
+    private static UserResponse ToUserResponse(UserDto user)
+        => new(user.Id, user.Email, user.FirstName, user.LastName);
 }
