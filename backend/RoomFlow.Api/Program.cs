@@ -2,11 +2,13 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RoomFlow.Application;
 using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Api;
 using RoomFlow.Infrastructure;
+using RoomFlow.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,10 +40,16 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (allowedOrigins is null || allowedOrigins.Length == 0)
+{
+    allowedOrigins = ["http://localhost:4200"];
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -65,6 +73,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddDocumentTransformer<OpenApiServerTransformer>();
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
@@ -74,11 +83,18 @@ builder.Services.AddExceptionHandler<InvalidCredentialsExceptionHandler>();
 
 var app = builder.Build();
 
+if (app.Configuration.GetValue("APPLY_MIGRATIONS", false))
+{
+    ApplyMigrations(app);
+}
+
 app.UseExceptionHandler();
 app.UseCors("frontend");
 app.UseRateLimiter();
 
-if (app.Environment.IsDevelopment())
+var swaggerEnabled = app.Environment.IsDevelopment()
+    || app.Configuration.GetValue("ENABLE_SWAGGER", false);
+if (swaggerEnabled)
 {
     app.MapOpenApi().AllowAnonymous();
     app.UseSwaggerUI(options =>
@@ -87,7 +103,14 @@ if (app.Environment.IsDevelopment())
         options.EnablePersistAuthorization();
     });
 }
-else
+
+var httpsRedirectEnabled = app.Configuration.GetValue("HttpsRedirection", !app.Environment.IsDevelopment());
+if (string.Equals(app.Configuration["ASPNETCORE_HTTPS_REDIRECT"], "false", StringComparison.OrdinalIgnoreCase))
+{
+    httpsRedirectEnabled = false;
+}
+
+if (httpsRedirectEnabled)
 {
     app.UseHttpsRedirection();
 }
@@ -95,5 +118,32 @@ else
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).AllowAnonymous();
 app.MapControllers();
 app.Run();
+
+static void ApplyMigrations(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<RoomFlowDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+    const int maxAttempts = 10;
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            dbContext.Database.Migrate();
+            return;
+        }
+        catch (Exception exception) when (attempt < maxAttempts)
+        {
+            logger.LogWarning(
+                exception,
+                "Database migration failed (attempt {Attempt}/{MaxAttempts}). Retrying...",
+                attempt,
+                maxAttempts);
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+        }
+    }
+}

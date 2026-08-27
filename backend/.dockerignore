@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/.vs/
+**/TestResults/
+**/publish/
+**/*.user
+**/*.suo
+RoomFlow.Application.Tests/
+RoomFlow.Api/appsettings.json
+.git/
+.idea/
+*.md
