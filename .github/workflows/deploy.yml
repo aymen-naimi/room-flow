@@ -1,0 +1,156 @@
+name: Deploy Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_RESOURCE_GROUP: rg-roomflow
+  AZURE_LOCATION: westeurope
+  PREFIX: roomflow
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test API
+        run: dotnet test backend/RoomFlow.Application.Tests/RoomFlow.Application.Tests.csproj --configuration Release --nologo
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Test frontend
+        working-directory: frontend
+        env:
+          CI: true
+        run: |
+          npm ci
+          npm run test:ci
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create resource group
+        run: az group create --name "$AZURE_RESOURCE_GROUP" --location "$AZURE_LOCATION"
+
+      - name: Deploy platform
+        id: platform
+        env:
+          SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
+        run: |
+          az deployment group create \
+            --name platform \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file infra/platform.bicep \
+            --parameters \
+              location="$AZURE_LOCATION" \
+              prefix="$PREFIX" \
+              sqlAdminPassword="$SQL_ADMIN_PASSWORD" \
+            --query properties.outputs -o json > platform-outputs.json
+
+          {
+            echo "acrName=$(jq -r '.acrName.value' platform-outputs.json)"
+            echo "acrLoginServer=$(jq -r '.acrLoginServer.value' platform-outputs.json)"
+            echo "identityId=$(jq -r '.identityId.value' platform-outputs.json)"
+            echo "environmentId=$(jq -r '.environmentId.value' platform-outputs.json)"
+            echo "sqlFqdn=$(jq -r '.sqlFqdn.value' platform-outputs.json)"
+            echo "sqlDatabaseName=$(jq -r '.sqlDatabaseName.value' platform-outputs.json)"
+            echo "sqlAdminLogin=$(jq -r '.sqlAdminLogin.value' platform-outputs.json)"
+            echo "swaName=$(jq -r '.swaName.value' platform-outputs.json)"
+            echo "swaHostname=$(jq -r '.swaHostname.value' platform-outputs.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push API image
+        run: |
+          az acr build \
+            --registry "${{ steps.platform.outputs.acrName }}" \
+            --image "roomflow-api:${{ github.sha }}" \
+            --file backend/Dockerfile \
+            backend
+
+      - name: Deploy API
+        id: api
+        env:
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
+          SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
+        run: |
+          az deployment group create \
+            --name api \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file infra/api.bicep \
+            --parameters \
+              location="$AZURE_LOCATION" \
+              prefix="$PREFIX" \
+              environmentId="${{ steps.platform.outputs.environmentId }}" \
+              acrLoginServer="${{ steps.platform.outputs.acrLoginServer }}" \
+              identityId="${{ steps.platform.outputs.identityId }}" \
+              apiImage="${{ steps.platform.outputs.acrLoginServer }}/roomflow-api:${{ github.sha }}" \
+              jwtSigningKey="$JWT_SIGNING_KEY" \
+              sqlFqdn="${{ steps.platform.outputs.sqlFqdn }}" \
+              sqlDatabaseName="${{ steps.platform.outputs.sqlDatabaseName }}" \
+              sqlAdminLogin="${{ steps.platform.outputs.sqlAdminLogin }}" \
+              sqlAdminPassword="$SQL_ADMIN_PASSWORD" \
+              corsOrigin="https://${{ steps.platform.outputs.swaHostname }}" \
+            --query properties.outputs -o json > api-outputs.json
+
+          echo "apiFqdn=$(jq -r '.apiFqdn.value' api-outputs.json)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          API_BASE_URL: https://${{ steps.api.outputs.apiFqdn }}
+        run: |
+          printf "export const environment = {\n  apiBaseUrl: '%s',\n};\n" "$API_BASE_URL" > src/environments/environment.prod.ts
+          cp src/environments/environment.prod.ts src/environments/environment.ts
+          npm ci
+          npm run build
+
+      - name: Read Static Web App token
+        id: swa
+        env:
+          SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+        run: |
+          TOKEN="$SWA_TOKEN"
+          if [ -z "$TOKEN" ]; then
+            TOKEN=$(az staticwebapp secrets list \
+              --name "${{ steps.platform.outputs.swaName }}" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --query properties.apiKey -o tsv)
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa.outputs.token }}
+          action: upload
+          app_location: frontend/dist/frontend/browser
+          output_location: ''
+          skip_app_build: true
+          skip_api_build: true
