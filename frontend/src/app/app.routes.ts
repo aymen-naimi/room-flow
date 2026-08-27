@@ -28,6 +28,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/rooms/rooms-list/rooms-list').then((m) => m.RoomsList),
       },
+      {
+        path: 'rooms/new',
+        loadComponent: () =>
+          import('./features/rooms/rooms-create/rooms-create').then((m) => m.RoomsCreate),
+      },
     ],
   },
   {

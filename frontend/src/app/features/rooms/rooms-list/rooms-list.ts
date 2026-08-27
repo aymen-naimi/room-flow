@@ -1,12 +1,14 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatButton } from '@angular/material/button';
 import { firstValueFrom } from 'rxjs';
 import { Room } from '../room';
 import { RoomsService } from '../rooms.service';
 
 @Component({
   selector: 'app-rooms-list',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink, MatButton],
   templateUrl: './rooms-list.html',
   styleUrl: './rooms-list.scss',
 })

@@ -1,0 +1,57 @@
+<section class="rooms-create">
+  <header class="rooms-create__header">
+    <h1 class="rooms-create__title">Ajouter une salle</h1>
+    <p class="rooms-create__subtitle">Renseigne le nom, la capacité et l'emplacement.</p>
+  </header>
+
+  <form class="rooms-create__form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline">
+      <mat-label>Nom</mat-label>
+      <input matInput formControlName="name" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Le nom est requis.</mat-error>
+      } @else if (form.controls.name.hasError('maxlength')) {
+        <mat-error>200 caractères maximum.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Capacité</mat-label>
+      <input matInput type="number" min="1" max="1000" step="1" formControlName="capacity" />
+      @if (form.controls.capacity.hasError('required')) {
+        <mat-error>La capacité est requise.</mat-error>
+      } @else if (form.controls.capacity.hasError('integer')) {
+        <mat-error>Un nombre entier est requis.</mat-error>
+      } @else if (form.controls.capacity.hasError('min')) {
+        <mat-error>Au moins 1 personne.</mat-error>
+      } @else if (form.controls.capacity.hasError('max')) {
+        <mat-error>1000 personnes maximum.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Emplacement</mat-label>
+      <input matInput formControlName="location" />
+      @if (form.controls.location.hasError('required')) {
+        <mat-error>L'emplacement est requis.</mat-error>
+      } @else if (form.controls.location.hasError('maxlength')) {
+        <mat-error>200 caractères maximum.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="rooms-create__error" role="alert">{{ message }}</p>
+    }
+
+    <button
+      class="rooms-create__submit"
+      matButton="filled"
+      type="submit"
+      [disabled]="form.invalid || isSubmitting()"
+    >
+      {{ isSubmitting() ? 'Création…' : 'Ajouter la salle' }}
+    </button>
+
+    <a class="rooms-create__link" routerLink="/in/rooms">Retour à la liste</a>
+  </form>
+</section>

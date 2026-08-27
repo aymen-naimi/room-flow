@@ -1,7 +1,10 @@
 <section class="rooms">
   <header class="rooms__header">
-    <h1 class="rooms__title">Salles</h1>
-    <p class="rooms__subtitle">Liste des salles disponibles.</p>
+    <div class="rooms__intro">
+      <h1 class="rooms__title">Salles</h1>
+      <p class="rooms__subtitle">Liste des salles disponibles.</p>
+    </div>
+    <a class="rooms__add" matButton="filled" routerLink="/in/rooms/new">Ajouter une salle</a>
   </header>
 
   @if (isLoading()) {

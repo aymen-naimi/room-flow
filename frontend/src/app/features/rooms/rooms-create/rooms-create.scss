@@ -1,0 +1,52 @@
+@use 'variables' as tokens;
+
+:host {
+  display: block;
+}
+
+.rooms-create {
+  max-width: 24rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+
+  &__header {
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+
+  &__subtitle {
+    margin: 0.35rem 0 0;
+    color: tokens.$color-text-muted;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__error {
+    margin: 0 0 0.5rem;
+    color: tokens.$color-error;
+  }
+
+  &__submit {
+    align-self: stretch;
+  }
+
+  &__link {
+    margin-top: 0.75rem;
+    text-align: center;
+    color: tokens.$color-primary;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

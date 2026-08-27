@@ -8,4 +8,11 @@ describe('routes', () => {
     expect(emptyChild?.pathMatch).toBe('full');
     expect(emptyChild?.redirectTo).toBe('rooms');
   });
+
+  it('declares rooms/new under /in', () => {
+    const inRoute = routes.find((route) => route.path === 'in');
+    const createChild = inRoute?.children?.find((route) => route.path === 'rooms/new');
+
+    expect(createChild).toBeDefined();
+  });
 });

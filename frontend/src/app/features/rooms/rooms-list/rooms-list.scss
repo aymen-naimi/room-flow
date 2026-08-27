@@ -10,7 +10,16 @@
   padding: 2rem 1.25rem;
 
   &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin-bottom: 1.5rem;
+  }
+
+  &__intro {
+    min-width: 0;
   }
 
   &__title {
