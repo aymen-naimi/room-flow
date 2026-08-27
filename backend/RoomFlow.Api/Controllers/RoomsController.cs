@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using RoomFlow.Api.Contracts.Rooms;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
+using RoomFlow.Application.Features.Rooms.Commands.DeleteRoom;
 using RoomFlow.Application.Features.Rooms.Queries.GetRoomById;
 using RoomFlow.Application.Features.Rooms.Queries.GetRooms;
 
@@ -43,6 +44,13 @@ public sealed class RoomsController : ControllerBase
         var command = new CreateRoomCommand(request.Name, request.Capacity, request.Location);
         var room = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = room.Id }, ToResponse(room));
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var deleted = await _sender.Send(new DeleteRoomCommand(id), cancellationToken);
+        return deleted ? NoContent() : NotFound();
     }
 
     private static RoomResponse ToResponse(RoomDto room)

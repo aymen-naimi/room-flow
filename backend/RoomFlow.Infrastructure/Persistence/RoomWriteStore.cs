@@ -34,6 +34,19 @@ public sealed class RoomWriteStore : IRoomWriteStore
         }
     }
 
+    public async Task<bool> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var room = await _dbContext.Rooms.FindAsync([id], cancellationToken);
+        if (room is null)
+        {
+            return false;
+        }
+
+        _dbContext.Rooms.Remove(room);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     private static bool IsUniqueNameViolation(DbUpdateException exception)
     {
         for (Exception? current = exception; current is not null; current = current.InnerException)

@@ -35,3 +35,22 @@ body {
   color: tokens.$color-text;
   background: tokens.$color-surface;
 }
+
+.snackbar--error,
+.snackbar--success,
+.snackbar--info {
+  --mat-snack-bar-supporting-text-color: #{tokens.$color-on-primary};
+  --mat-snack-bar-button-color: #{tokens.$color-on-primary};
+}
+
+.snackbar--error {
+  --mat-snack-bar-container-color: #{tokens.$color-error};
+}
+
+.snackbar--success {
+  --mat-snack-bar-container-color: #{tokens.$color-success};
+}
+
+.snackbar--info {
+  --mat-snack-bar-container-color: #{tokens.$color-info};
+}

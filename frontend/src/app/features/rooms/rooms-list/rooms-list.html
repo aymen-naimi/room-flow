@@ -19,6 +19,7 @@
           <th class="rooms__heading">Capacité</th>
           <th class="rooms__heading">Emplacement</th>
           <th class="rooms__heading">Créée le</th>
+          <th class="rooms__heading rooms__heading--actions">Actions</th>
         </tr>
       </thead>
       <tbody class="rooms__body">
@@ -28,6 +29,19 @@
             <td class="rooms__cell">{{ room.capacity }}</td>
             <td class="rooms__cell">{{ room.location }}</td>
             <td class="rooms__cell">{{ room.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td class="rooms__cell rooms__cell--actions">
+              <button
+                class="rooms__delete"
+                matIconButton
+                type="button"
+                aria-label="Supprimer"
+                matTooltip="Supprimer"
+                [disabled]="isDeleting()"
+                (click)="onDelete(room)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
           </tr>
         }
       </tbody>

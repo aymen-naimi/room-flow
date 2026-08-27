@@ -15,6 +15,18 @@ internal sealed class FakeRoomWriteStore : IRoomWriteStore
         Rooms.Add(room);
         return Task.CompletedTask;
     }
+
+    public Task<bool> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var room = Rooms.FirstOrDefault(entity => entity.Id == id);
+        if (room is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        Rooms.Remove(room);
+        return Task.FromResult(true);
+    }
 }
 
 internal sealed class FakeRoomReadStore : IRoomReadStore

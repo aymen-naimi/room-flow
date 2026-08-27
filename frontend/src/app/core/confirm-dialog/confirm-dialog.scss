@@ -1,0 +1,31 @@
+@use '@angular/material' as mat;
+@use 'variables' as tokens;
+
+.confirm-dialog {
+  min-width: 18rem;
+  padding: 0.5rem 0.25rem 0;
+
+  &__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  &__message {
+    margin: 0.75rem 0 0;
+    color: tokens.$color-text-muted;
+  }
+
+  &__actions {
+    margin-top: 1rem;
+  }
+
+  &__confirm--destructive {
+    @include mat.button-overrides(
+      (
+        filled-container-color: tokens.$color-error,
+        filled-label-text-color: tokens.$color-on-primary,
+      )
+    );
+  }
+}

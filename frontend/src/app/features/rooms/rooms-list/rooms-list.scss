@@ -69,6 +69,16 @@
     border-bottom-color: tokens.$color-primary;
   }
 
+  &__heading--actions,
+  &__cell--actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  &__delete {
+    color: tokens.$color-text;
+  }
+
   &__body &__row:last-child &__cell {
     border-bottom: 0;
   }

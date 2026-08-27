@@ -7,4 +7,6 @@ public interface IRoomWriteStore
     Task<bool> ExistsWithNameAsync(string name, CancellationToken cancellationToken = default);
 
     Task AddAsync(Room room, CancellationToken cancellationToken = default);
+
+    Task<bool> RemoveAsync(Guid id, CancellationToken cancellationToken = default);
 }

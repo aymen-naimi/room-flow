@@ -14,4 +14,8 @@ export class RoomsService {
   public createRoom(request: CreateRoomRequest): Observable<Room> {
     return this.http.post<Room>('/api/rooms', request);
   }
+
+  public deleteRoom(id: string): Observable<void> {
+    return this.http.delete<void>(`/api/rooms/${id}`);
+  }
 }

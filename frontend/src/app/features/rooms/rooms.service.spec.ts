@@ -45,4 +45,22 @@ describe('RoomsService', () => {
     expect(result).toEqual(roomHorizonMock);
     http.verify();
   });
+
+  it('deletes a room by id', async () => {
+    const { rooms, http } = await setup();
+    let completed = false;
+
+    rooms.deleteRoom(roomHorizonMock.id).subscribe({
+      complete: () => {
+        completed = true;
+      },
+    });
+
+    const request = http.expectOne(`/api/rooms/${roomHorizonMock.id}`);
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+
+    expect(completed).toBe(true);
+    http.verify();
+  });
 });
