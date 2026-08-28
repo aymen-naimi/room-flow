@@ -34,6 +34,19 @@ public class RoomFlowDbContext : DbContext
             entity.Property(user => user.LastName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.HasOne(booking => booking.Room)
+                .WithMany(room => room.Bookings)
+                .HasForeignKey(booking => booking.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(booking => booking.User)
+                .WithMany(user => user.Bookings)
+                .HasForeignKey(booking => booking.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<RefreshToken>(entity =>
         {
             entity.Property(token => token.TokenHash).HasMaxLength(88);

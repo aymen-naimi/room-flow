@@ -2,7 +2,6 @@
   <header class="rooms__header">
     <div class="rooms__intro">
       <h1 class="rooms__title">Salles</h1>
-      <p class="rooms__subtitle">Liste des salles disponibles.</p>
     </div>
     <a class="rooms__add" matButton="filled" routerLink="/in/rooms/new">Ajouter une salle</a>
   </header>
@@ -30,6 +29,15 @@
             <td class="rooms__cell">{{ room.location }}</td>
             <td class="rooms__cell">{{ room.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td class="rooms__cell rooms__cell--actions">
+              <a
+                class="rooms__planning"
+                matIconButton
+                [routerLink]="['/in/bookings', room.id]"
+                aria-label="Voir le planning"
+                matTooltip="Voir le planning"
+              >
+                <mat-icon>event</mat-icon>
+              </a>
               <button
                 class="rooms__delete"
                 matIconButton

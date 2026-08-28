@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
-import { CreateRoomRequest, Room } from './room';
+import { CreateRoomRequest, Room } from './rooms.model';
 import { Observable } from 'rxjs';
 
 @Service()

@@ -39,6 +39,6 @@ describe('auth guards', () => {
     await setup(true);
     const result = TestBed.runInInjectionContext(() => guestGuard({} as never, {} as never));
     expect(result).toBeInstanceOf(UrlTree);
-    expect((result as UrlTree).toString()).toBe('/in/rooms');
+    expect((result as UrlTree).toString()).toBe('/in/my-bookings');
   });
 });

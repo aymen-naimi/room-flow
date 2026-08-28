@@ -33,6 +33,9 @@
               }
             ],
             "styles": [
+              "@fullcalendar/angular/skeleton.css",
+              "@fullcalendar/angular/themes/monarch/theme.css",
+              "@fullcalendar/angular/themes/monarch/palettes/blue.css",
               "src/styles.scss"
             ]
           },
@@ -47,8 +50,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1.2MB",
+                  "maximumError": "1.8MB"
                 },
                 {
                   "type": "anyComponentStyle",

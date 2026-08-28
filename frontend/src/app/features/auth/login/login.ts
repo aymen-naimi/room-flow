@@ -50,7 +50,7 @@ export class Login {
 
     try {
       await firstValueFrom(this.auth.login(this.form.getRawValue()));
-      await this.router.navigateByUrl('/in/rooms');
+      await this.router.navigateByUrl('/in/my-bookings');
     } catch (error: unknown) {
       this.errorMessage.set(authErrorMessage(error, AuthErrorMessage.LoginFailed));
       if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {

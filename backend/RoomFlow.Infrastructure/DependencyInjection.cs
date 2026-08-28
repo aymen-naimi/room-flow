@@ -21,6 +21,8 @@ public static class DependencyInjection
 
         services.AddScoped<IRoomReadStore, RoomReadStore>();
         services.AddScoped<IRoomWriteStore, RoomWriteStore>();
+        services.AddScoped<IBookingReadStore, BookingReadStore>();
+        services.AddScoped<IBookingWriteStore, BookingWriteStore>();
         services.AddScoped<IUserWriteStore, UserWriteStore>();
         services.AddScoped<IUserReadStore, UserReadStore>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();

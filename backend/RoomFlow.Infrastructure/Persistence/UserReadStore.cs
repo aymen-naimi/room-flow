@@ -15,4 +15,7 @@ public sealed class UserReadStore : IUserReadStore
 
     public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
         => _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(user => user.Email == email, cancellationToken);
+
+    public Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        => _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(user => user.Id == id, cancellationToken);
 }

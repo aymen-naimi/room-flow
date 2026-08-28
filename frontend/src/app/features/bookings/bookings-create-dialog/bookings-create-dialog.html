@@ -1,0 +1,100 @@
+<section class="bookings-create">
+  <h2 class="bookings-create__title" mat-dialog-title>Nouvelle réservation</h2>
+  <div class="bookings-create__content" mat-dialog-content>
+    <form class="bookings-create__form" [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field class="bookings-create__date" appearance="outline">
+        <mat-label>Date</mat-label>
+        <input matInput [matDatepicker]="picker" [min]="minDate" formControlName="date" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+        @if (form.controls.date.hasError('required')) {
+          <mat-error>La date est requise.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="bookings-create__times">
+        <div class="bookings-create__slot">
+          <p class="bookings-create__slot-label">Début</p>
+          <div class="bookings-create__slot-fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Heure</mat-label>
+              <mat-select formControlName="startHour">
+                @for (hour of hours; track hour) {
+                  <mat-option [value]="hour">{{ padTime(hour) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Minutes</mat-label>
+              <mat-select formControlName="startMinute">
+                @for (minute of minutesFor(form.controls.startHour.value); track minute) {
+                  <mat-option [value]="minute">{{ padTime(minute) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="bookings-create__slot">
+          <p class="bookings-create__slot-label">Fin</p>
+          <div class="bookings-create__slot-fields">
+            <mat-form-field appearance="outline">
+              <mat-label>Heure</mat-label>
+              <mat-select formControlName="endHour">
+                @for (hour of hours; track hour) {
+                  <mat-option [value]="hour">{{ padTime(hour) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Minutes</mat-label>
+              <mat-select formControlName="endMinute">
+                @for (minute of minutesFor(form.controls.endHour.value); track minute) {
+                  <mat-option [value]="minute">{{ padTime(minute) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      @if (form.hasError('range') || form.hasError('minDuration')) {
+        <p class="bookings-create__error" role="alert">{{ rangeError }}</p>
+      }
+      @if (form.hasError('past')) {
+        <p class="bookings-create__error" role="alert">{{ pastError }}</p>
+      }
+
+      @if (lockedRoom; as room) {
+        <p class="bookings-create__room">{{ room.name }}</p>
+      } @else {
+        <mat-form-field appearance="outline">
+          <mat-label>Salle</mat-label>
+          <mat-select formControlName="roomId">
+            @for (room of data.rooms; track room.id) {
+              <mat-option [value]="room.id">{{ room.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.roomId.hasError('required')) {
+            <mat-error>La salle est requise.</mat-error>
+          }
+        </mat-form-field>
+      }
+    </form>
+
+    @if (errorMessage(); as message) {
+      <p class="bookings-create__error" role="alert">{{ message }}</p>
+    }
+  </div>
+  <div class="bookings-create__actions" mat-dialog-actions align="end">
+    <button matButton type="button" (click)="cancel()">Annuler</button>
+    <button
+      class="bookings-create__submit"
+      matButton="filled"
+      type="button"
+      [disabled]="form.invalid || isSubmitting()"
+      (click)="submit()"
+    >
+      {{ isSubmitting() ? 'Réservation…' : 'Réserver' }}
+    </button>
+  </div>
+</section>

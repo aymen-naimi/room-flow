@@ -9,4 +9,7 @@ internal sealed class FakeUserReadStore : IUserReadStore
 
     public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
         => Task.FromResult(Users.FirstOrDefault(user => user.Email == email));
+
+    public Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        => Task.FromResult(Users.FirstOrDefault(user => user.Id == id));
 }

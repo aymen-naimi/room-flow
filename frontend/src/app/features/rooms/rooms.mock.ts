@@ -1,4 +1,4 @@
-import { CreateRoomRequest, Room } from './room';
+import { CreateRoomRequest, Room } from './rooms.model';
 
 export const roomHorizonMock: Room = {
   id: '11111111-1111-1111-1111-111111111111',

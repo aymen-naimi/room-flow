@@ -15,13 +15,30 @@ export const routes: Routes = [
   {
     path: 'in',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./core/main-layout/main-layout').then((m) => m.MainLayout),
+    loadComponent: () => import('./core/main-layout/main-layout').then((m) => m.MainLayout),
     children: [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'rooms',
+        redirectTo: 'my-bookings',
+      },
+      {
+        path: 'bookings',
+        loadComponent: () =>
+          import('./features/bookings/bookings/bookings').then((m) => m.Bookings),
+        data: { mode: 'room' },
+      },
+      {
+        path: 'bookings/:roomId',
+        loadComponent: () =>
+          import('./features/bookings/bookings/bookings').then((m) => m.Bookings),
+        data: { mode: 'room' },
+      },
+      {
+        path: 'my-bookings',
+        loadComponent: () =>
+          import('./features/bookings/bookings/bookings').then((m) => m.Bookings),
+        data: { mode: 'mine' },
       },
       {
         path: 'rooms',
@@ -38,10 +55,10 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'in/rooms',
+    redirectTo: 'in/my-bookings',
   },
   {
     path: '**',
-    redirectTo: 'in/rooms',
+    redirectTo: 'in/my-bookings',
   },
 ];

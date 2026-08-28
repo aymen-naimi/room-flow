@@ -28,11 +28,6 @@
     font-weight: 600;
   }
 
-  &__subtitle {
-    margin: 0.35rem 0 0;
-    color: tokens.$color-text-muted;
-  }
-
   &__status {
     margin: 0;
     color: tokens.$color-text-muted;
@@ -75,6 +70,7 @@
     white-space: nowrap;
   }
 
+  &__planning,
   &__delete {
     color: tokens.$color-text;
   }

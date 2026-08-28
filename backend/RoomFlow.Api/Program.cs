@@ -80,6 +80,9 @@ builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<RoomNameAlreadyTakenExceptionHandler>();
 builder.Services.AddExceptionHandler<EmailAlreadyTakenExceptionHandler>();
 builder.Services.AddExceptionHandler<InvalidCredentialsExceptionHandler>();
+builder.Services.AddExceptionHandler<BookingOverlapExceptionHandler>();
+builder.Services.AddExceptionHandler<BookingNotOwnedExceptionHandler>();
+builder.Services.AddExceptionHandler<RoomNotFoundExceptionHandler>();
 
 var app = builder.Build();
 

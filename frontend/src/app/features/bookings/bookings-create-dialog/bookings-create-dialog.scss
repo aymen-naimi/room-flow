@@ -1,0 +1,63 @@
+@use 'variables' as tokens;
+
+.bookings-create {
+  &__title {
+    margin: 0;
+  }
+
+  &__content {
+    overflow: visible;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 0.75rem;
+  }
+
+  &__times {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  &__slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__slot-label {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  &__slot-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  &__room {
+    margin: 0.25rem 0 0.5rem;
+    font-weight: 500;
+    font-size: 1.125rem;
+    text-align: center;
+  }
+
+  &__error {
+    margin: 0.25rem 0 0;
+    color: tokens.$color-error;
+  }
+
+  &__actions {
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 40rem) {
+    &__times {
+      grid-template-columns: 1fr;
+    }
+  }
+}

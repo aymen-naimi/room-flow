@@ -8,7 +8,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
 import { Toast } from '../../../core/toast';
-import { Room } from '../room';
+import { Room } from '../rooms.model';
 import { RoomsService } from '../rooms.service';
 
 export const RoomDeleteErrorMessage = 'Impossible de supprimer la salle.';

@@ -1,0 +1,43 @@
+<section class="bookings">
+  <header class="bookings__header">
+    <h1 class="bookings__title">{{ title() }}</h1>
+    @if (isRoomMode() && hasRooms()) {
+      <mat-form-field class="bookings__room" appearance="outline">
+        <mat-label>Salle</mat-label>
+        <mat-select [value]="selectedRoomId()" (selectionChange)="onRoomChange($event.value)">
+          @for (room of rooms(); track room.id) {
+            <mat-option [value]="room.id">{{ room.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+    @if (hasRooms()) {
+      <button
+        class="bookings__reserve"
+        matButton="filled"
+        type="button"
+        [disabled]="isMutating()"
+        (click)="openReserveDialog()"
+      >
+        Réserver
+      </button>
+    }
+  </header>
+
+  @if (isLoading()) {
+    <p class="bookings__status">Chargement du planning…</p>
+  } @else if (hasError()) {
+    <p class="bookings__status bookings__status--error">Impossible de charger le planning.</p>
+  } @else if (!hasRooms()) {
+    <p class="bookings__status">
+      Aucune salle pour le moment.
+      <a class="bookings__link" routerLink="/in/rooms/new">Ajouter une salle</a>
+    </p>
+  } @else if (isRoomMode() && !selectedRoomId()) {
+    <p class="bookings__status">Choisissez une salle.</p>
+  } @else {
+    <div class="bookings__calendar">
+      <full-calendar [options]="calendarOptions" [events]="events()" />
+    </div>
+  }
+</section>

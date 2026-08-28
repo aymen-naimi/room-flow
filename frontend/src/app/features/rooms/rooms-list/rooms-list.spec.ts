@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { Toast } from '../../../core/toast';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
-import { Room } from '../room';
+import { Room } from '../rooms.model';
 import { roomHorizonMock, roomsMock } from '../rooms.mock';
 import { RoomDeleteErrorMessage, RoomDeleteSuccessMessage, RoomsList } from './rooms-list';
 
@@ -68,6 +68,12 @@ describe('RoomsList', () => {
     expect(fixture.nativeElement.textContent).toContain(roomsMock[0].location);
     expect(fixture.nativeElement.querySelector('.rooms__add').getAttribute('href')).toBe(
       '/in/rooms/new',
+    );
+    expect(fixture.nativeElement.querySelector('.rooms__planning').getAttribute('href')).toBe(
+      `/in/bookings/${roomsMock[0].id}`,
+    );
+    expect(fixture.nativeElement.querySelector('.rooms__planning').getAttribute('aria-label')).toBe(
+      'Voir le planning',
     );
     expect(fixture.nativeElement.querySelector('.rooms__delete').getAttribute('aria-label')).toBe(
       'Supprimer',
