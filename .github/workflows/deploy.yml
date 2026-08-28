@@ -79,13 +79,17 @@ jobs:
             echo "swaHostname=$(jq -r '.swaHostname.value' platform-outputs.json)"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Login to ACR
+        run: az acr login --name "${{ steps.platform.outputs.acrName }}"
+
       - name: Build and push API image
         run: |
-          az acr build \
-            --registry "${{ steps.platform.outputs.acrName }}" \
-            --image "roomflow-api:${{ github.sha }}" \
-            --file backend/Dockerfile \
+          docker build \
+            -f backend/Dockerfile \
+            -t "${{ steps.platform.outputs.acrLoginServer }}/roomflow-api:${{ github.sha }}" \
             backend
+          docker push \
+            "${{ steps.platform.outputs.acrLoginServer }}/roomflow-api:${{ github.sha }}"
 
       - name: Deploy API
         id: api
