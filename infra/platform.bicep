@@ -22,7 +22,7 @@ var identityName = take('${prefix}-aca-id-${unique}', 64)
 module sql 'modules/sql.bicep' = {
   name: 'sql'
   params: {
-    location: 'eastus2'
+    location: 'francecentral'
     administratorLogin: sqlAdminLogin
     administratorPassword: sqlAdminPassword
     serverName: sqlServerName
