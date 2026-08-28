@@ -51,7 +51,7 @@ module containerAppsEnvironment 'modules/containerAppsEnvironment.bicep' = {
 module swa 'modules/swa.bicep' = {
   name: 'swa'
   params: {
-    location: 'westeurope'
+    location: 'eastus2'
     name: swaName
   }
 }
