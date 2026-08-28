@@ -11,7 +11,7 @@ permissions:
 
 env:
   AZURE_RESOURCE_GROUP: rg-roomflow
-  AZURE_LOCATION: westeurope
+  AZURE_LOCATION: northeurope
   PREFIX: roomflow
 
 jobs:

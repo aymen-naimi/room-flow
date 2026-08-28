@@ -1,5 +1,5 @@
 @description('Azure region')
-param location string = 'westeurope'
+param location string = 'northeurope'
 
 @description('Name prefix for resources')
 param prefix string = 'roomflow'
