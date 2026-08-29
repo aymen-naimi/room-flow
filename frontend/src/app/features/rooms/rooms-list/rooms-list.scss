@@ -28,6 +28,12 @@
     font-weight: 600;
   }
 
+  &__lead {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    color: tokens.$color-text-muted;
+  }
+
   &__status {
     margin: 0;
     color: tokens.$color-text-muted;

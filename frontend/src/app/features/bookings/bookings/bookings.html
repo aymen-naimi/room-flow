@@ -1,26 +1,39 @@
 <section class="bookings">
   <header class="bookings__header">
-    <h1 class="bookings__title">{{ title() }}</h1>
-    @if (isRoomMode() && hasRooms()) {
-      <mat-form-field class="bookings__room" appearance="outline">
-        <mat-label>Salle</mat-label>
-        <mat-select [value]="selectedRoomId()" (selectionChange)="onRoomChange($event.value)">
-          @for (room of rooms(); track room.id) {
-            <mat-option [value]="room.id">{{ room.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    }
+    <div class="bookings__intro">
+      <h1 class="bookings__title">{{ title() }}</h1>
+      <p class="bookings__lead">{{ lead() }}</p>
+    </div>
     @if (hasRooms()) {
-      <button
-        class="bookings__reserve"
-        matButton="filled"
-        type="button"
-        [disabled]="isMutating()"
-        (click)="openReserveDialog()"
-      >
-        Réserver
-      </button>
+      <div class="bookings__actions">
+        @if (isRoomMode()) {
+          <mat-form-field class="bookings__room" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Salle</mat-label>
+            <mat-icon class="bookings__room-icon" matPrefix>meeting_room</mat-icon>
+            <mat-select
+              placeholder="Choisir une salle"
+              [value]="selectedRoomId()"
+              (selectionChange)="onRoomChange($event.value)"
+            >
+              @for (room of rooms(); track room.id) {
+                <mat-option [value]="room.id">{{ room.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        <span class="bookings__reserve-wrap" [matTooltip]="reserveHint()">
+          <button
+            class="bookings__reserve"
+            matButton="filled"
+            type="button"
+            [disabled]="isReserveDisabled()"
+            (click)="openReserveDialog()"
+          >
+            <mat-icon>event</mat-icon>
+            Réserver
+          </button>
+        </span>
+      </div>
     }
   </header>
 
@@ -34,7 +47,11 @@
       <a class="bookings__link" routerLink="/in/rooms/new">Ajouter une salle</a>
     </p>
   } @else if (isRoomMode() && !selectedRoomId()) {
-    <p class="bookings__status">Choisissez une salle.</p>
+    <div class="bookings__empty">
+      <mat-icon class="bookings__empty-icon">meeting_room</mat-icon>
+      <p class="bookings__empty-title">Choisissez une salle</p>
+      <p class="bookings__empty-text">Sélectionnez une salle ci-dessus pour afficher son planning.</p>
+    </div>
   } @else {
     <div class="bookings__calendar">
       <full-calendar [options]="calendarOptions" [events]="events()" />

@@ -159,7 +159,9 @@ describe('Bookings', () => {
       BookingsDisponibilitesTitle,
     );
     expect(fixture.nativeElement.querySelector('full-calendar')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.bookings__empty')).toBeNull();
     expect(fixture.nativeElement.querySelector('.bookings__room')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.bookings__reserve').disabled).toBe(false);
     const events = fixture.componentInstance['events']();
     expect(events.some((event) => event.id === bookingAdaMock.id)).toBe(true);
     expect(events.find((event) => event.id === bookingAdaMock.id)?.title).toBe(
@@ -174,9 +176,10 @@ describe('Bookings', () => {
 
     expect(fixture.nativeElement.querySelector('.bookings__room')).toBeTruthy();
     expect(fixture.componentInstance['selectedRoomId']()).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Choisissez une salle.');
+    expect(fixture.nativeElement.querySelector('.bookings__empty')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Choisissez une salle');
     expect(fixture.nativeElement.querySelector('full-calendar')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.bookings__reserve')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.bookings__reserve').disabled).toBe(true);
     expect(bookingsRequest).toBeUndefined();
     http.verify();
   });

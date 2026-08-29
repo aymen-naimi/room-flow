@@ -1,10 +1,12 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatFormField, MatLabel, MatPrefix } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
 import { MatOption, MatSelect } from '@angular/material/select';
+import { MatTooltip } from '@angular/material/tooltip';
 import {
   CalendarOptions,
   DateSelectInfo,
@@ -33,6 +35,9 @@ export const BookingsRoomMode = 'room';
 export const BookingsMineMode = 'mine';
 export const BookingsAgendaTitle = 'Agenda';
 export const BookingsDisponibilitesTitle = 'Disponibilités';
+export const BookingsAgendaLead = 'Retrouvez vos réservations et réservez un créneau.';
+export const BookingsDisponibilitesLead = 'Consultez le planning et réservez un créneau.';
+export const BookingsReserveHint = 'Choisissez d’abord une salle';
 
 export type BookingsMode = typeof BookingsRoomMode | typeof BookingsMineMode;
 
@@ -47,9 +52,12 @@ export const BookingDeleteConfirm = 'Annuler la réservation';
     RouterLink,
     MatButton,
     MatFormField,
+    MatIcon,
     MatLabel,
+    MatPrefix,
     MatSelect,
     MatOption,
+    MatTooltip,
   ],
   templateUrl: './bookings.html',
   styleUrl: './bookings.scss',
@@ -70,12 +78,22 @@ export class Bookings implements OnInit {
   protected readonly title = signal(
     this.isRoomMode() ? BookingsDisponibilitesTitle : BookingsAgendaTitle,
   );
+  protected readonly lead = signal(
+    this.isRoomMode() ? BookingsDisponibilitesLead : BookingsAgendaLead,
+  );
   protected readonly rooms = signal<Room[]>([]);
   protected readonly selectedRoomId = signal<string | null>(null);
   protected readonly events = signal<EventInput[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly hasError = signal(false);
   protected readonly isMutating = signal(false);
+  protected readonly hasRooms = computed(() => this.rooms().length > 0);
+  protected readonly isReserveDisabled = computed(
+    () => this.isMutating() || (this.isRoomMode() && !this.selectedRoomId()),
+  );
+  protected readonly reserveHint = computed(() =>
+    this.isRoomMode() && !this.selectedRoomId() ? BookingsReserveHint : '',
+  );
 
   private currentRange: { from: string; to: string } | null = null;
 
@@ -132,10 +150,6 @@ export class Bookings implements OnInit {
     }
   }
 
-  protected hasRooms(): boolean {
-    return this.rooms().length > 0;
-  }
-
   protected onRoomChange(roomId: string): void {
     this.selectedRoomId.set(roomId);
     void this.syncRoomRoute(roomId);
@@ -143,7 +157,7 @@ export class Bookings implements OnInit {
   }
 
   protected openReserveDialog(): void {
-    if (!this.hasRooms() || this.isMutating()) {
+    if (!this.hasRooms() || this.isReserveDisabled()) {
       return;
     }
 
