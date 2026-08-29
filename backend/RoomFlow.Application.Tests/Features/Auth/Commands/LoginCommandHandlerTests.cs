@@ -2,6 +2,7 @@ using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Auth.Commands.Login;
 using RoomFlow.Application.Tests.Fakes;
 using RoomFlow.Domain.Entities;
+using RoomFlow.Domain.Enums;
 
 namespace RoomFlow.Application.Tests.Features.Auth.Commands;
 
@@ -27,7 +28,8 @@ public sealed class LoginCommandHandlerTests
         var result = await handler.Handle(new LoginCommand("Ada@Example.com", "password1"), CancellationToken.None);
 
         Assert.Equal("ada@example.com", result.User.Email);
-        Assert.StartsWith("token:", result.AccessToken);
+        Assert.Equal(UserRole.User, result.User.Role);
+        Assert.Equal($"token:{user.Id}:{user.Email}:{user.Role}", result.AccessToken);
         Assert.Equal("refresh-raw-1", result.RefreshToken);
         Assert.Single(refreshStore.Tokens);
         Assert.NotNull(user.LastSignIn);

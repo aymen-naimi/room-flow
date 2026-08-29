@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { authGuard, guestGuard, adminGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -47,6 +47,7 @@ export const routes: Routes = [
       },
       {
         path: 'rooms/new',
+        canActivate: [adminGuard],
         loadComponent: () =>
           import('./features/rooms/rooms-create/rooms-create').then((m) => m.RoomsCreate),
       },

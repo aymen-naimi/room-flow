@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RoomFlow.Application.Abstractions.Security;
+using RoomFlow.Domain.Enums;
 
 namespace RoomFlow.Infrastructure.Security;
 
@@ -16,7 +17,7 @@ public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
         _options = options.Value;
     }
 
-    public string Create(Guid userId, string email)
+    public string Create(Guid userId, string email, UserRole role)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -29,7 +30,8 @@ public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
             [
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role.ToString())
             ],
             expires: expires,
             signingCredentials: credentials);

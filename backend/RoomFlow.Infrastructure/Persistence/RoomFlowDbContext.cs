@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RoomFlow.Domain.Entities;
+using RoomFlow.Domain.Enums;
 
 namespace RoomFlow.Infrastructure.Persistence;
 
@@ -36,6 +37,10 @@ public class RoomFlowDbContext : DbContext
             entity.Property(user => user.PasswordHash).HasMaxLength(500);
             entity.Property(user => user.FirstName).HasMaxLength(100);
             entity.Property(user => user.LastName).HasMaxLength(100);
+            entity.Property(user => user.Role)
+                .HasConversion<string>()
+                .HasMaxLength(32)
+                .HasDefaultValue(UserRole.User);
             entity.Property(user => user.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
 

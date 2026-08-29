@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoomFlow.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using RoomFlow.Infrastructure.Persistence;
 namespace RoomFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(RoomFlowDbContext))]
-    partial class RoomFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260829141707_AddUserRole")]
+    partial class AddUserRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

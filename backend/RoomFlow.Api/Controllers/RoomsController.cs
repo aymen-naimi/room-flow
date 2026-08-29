@@ -37,6 +37,7 @@ public sealed class RoomsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<RoomResponse>> Create(
         [FromBody] CreateRoomRequest request,
         CancellationToken cancellationToken)
@@ -52,6 +53,7 @@ public sealed class RoomsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var deleted = await _sender.Send(new DeleteRoomCommand(id), cancellationToken);

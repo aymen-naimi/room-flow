@@ -74,8 +74,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
             },
             cancellationToken);
 
-        var userDto = new UserDto(user.Id, user.Email, user.FirstName, user.LastName);
-        var accessToken = accessTokenGenerator.Create(user.Id, user.Email);
+        var userDto = new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role);
+        var accessToken = accessTokenGenerator.Create(user.Id, user.Email, user.Role);
         return new LoginResult(userDto, accessToken, refresh.Raw);
     }
 

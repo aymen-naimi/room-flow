@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
 import { Page } from '../../../core/page/page';
 import { Toast } from '../../../core/toast';
@@ -25,6 +26,9 @@ export class RoomsList implements OnInit {
   private readonly roomsService = inject(RoomsService);
   private readonly dialog = inject(MatDialog);
   private readonly toast = inject(Toast);
+  private readonly auth = inject(AuthService);
+
+  protected readonly isAdmin = this.auth.isAdmin;
 
   protected readonly rooms = signal<Room[]>([]);
   protected readonly isLoading = signal(true);

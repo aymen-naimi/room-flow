@@ -3,6 +3,7 @@ using RoomFlow.Application.Features.Auth.Commands.Login;
 using RoomFlow.Application.Features.Auth.Commands.Refresh;
 using RoomFlow.Application.Tests.Fakes;
 using RoomFlow.Domain.Entities;
+using RoomFlow.Domain.Enums;
 
 namespace RoomFlow.Application.Tests.Features.Auth.Commands;
 
@@ -36,6 +37,8 @@ public sealed class RefreshCommandHandlerTests
         var result = await handler.Handle(new RefreshCommand(issued.Raw), CancellationToken.None);
 
         Assert.Equal("ada@example.com", result.User.Email);
+        Assert.Equal(UserRole.User, result.User.Role);
+        Assert.Equal($"token:{user.Id}:{user.Email}:{user.Role}", result.AccessToken);
         Assert.Equal("refresh-raw-2", result.RefreshToken);
         Assert.NotNull(store.Tokens[0].RevokedAt);
         Assert.Equal(2, store.Tokens.Count);

@@ -33,6 +33,7 @@ export class AuthService {
   public readonly accessToken = this.accessTokenSignal.asReadonly();
   public readonly refreshToken = this.refreshTokenSignal.asReadonly();
   public readonly isAuthenticated = computed(() => this.refreshTokenSignal() !== null);
+  public readonly isAdmin = computed(() => this.userSignal()?.role === 'Admin');
 
   constructor() {
     this.restoreSession();

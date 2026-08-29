@@ -1,5 +1,7 @@
-<app-page title="Salles" lead="Gérez les salles et consultez leur planning.">
-  <a pageActions class="rooms__add" matButton="filled" routerLink="/in/rooms/new">Ajouter une salle</a>
+  <app-page title="Salles" lead="Gérez les salles et consultez leur planning.">
+  @if (isAdmin()) {
+    <a pageActions class="rooms__add" matButton="filled" routerLink="/in/rooms/new">Ajouter une salle</a>
+  }
 
   @if (isLoading()) {
     <p class="page__status">Chargement des salles…</p>
@@ -33,17 +35,19 @@
               >
                 <mat-icon>event</mat-icon>
               </a>
-              <button
-                class="rooms__delete"
-                matIconButton
-                type="button"
-                aria-label="Supprimer"
-                matTooltip="Supprimer"
-                [disabled]="isDeleting()"
-                (click)="onDelete(room)"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
+              @if (isAdmin()) {
+                <button
+                  class="rooms__delete"
+                  matIconButton
+                  type="button"
+                  aria-label="Supprimer"
+                  matTooltip="Supprimer"
+                  [disabled]="isDeleting()"
+                  (click)="onDelete(room)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
             </td>
           </tr>
         }

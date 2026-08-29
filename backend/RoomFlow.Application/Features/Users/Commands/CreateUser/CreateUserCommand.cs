@@ -3,6 +3,7 @@ using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Domain.Entities;
+using RoomFlow.Domain.Enums;
 
 namespace RoomFlow.Application.Features.Users.Commands.CreateUser;
 
@@ -36,11 +37,12 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
             PasswordHash = _passwordHasher.Hash(request.Password),
             FirstName = request.FirstName.Trim(),
             LastName = request.LastName.Trim(),
+            Role = UserRole.User,
             CreatedAt = DateTimeOffset.UtcNow
         };
 
         await _writeStore.AddAsync(user, cancellationToken);
 
-        return new UserDto(user.Id, user.Email, user.FirstName, user.LastName);
+        return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role);
     }
 }

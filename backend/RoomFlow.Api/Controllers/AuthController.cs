@@ -76,5 +76,5 @@ public sealed class AuthController : ControllerBase
             ToUserResponse(result.User));
 
     private static UserResponse ToUserResponse(UserDto user)
-        => new(user.Id, user.Email, user.FirstName, user.LastName);
+        => new(user.Id, user.Email, user.FirstName, user.LastName, user.Role.ToString());
 }

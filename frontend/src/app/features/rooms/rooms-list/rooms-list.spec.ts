@@ -5,6 +5,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
+import { adminLoginResponseMock, loginResponseMock } from '../../../core/auth/auth.mock';
+import { AUTH_SESSION_KEY } from '../../../core/auth/auth.service';
 import { Toast } from '../../../core/toast';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
 import { Room } from '../rooms.model';
@@ -18,9 +20,14 @@ const roomNordMock: Room = {
 };
 
 describe('RoomsList', () => {
+  afterEach(() => {
+    sessionStorage.clear();
+  });
+
   async function setup(
     confirmed = true,
     rooms: Room[] = roomsMock,
+    role: 'Admin' | 'User' = 'Admin',
   ): Promise<{
     fixture: ReturnType<typeof TestBed.createComponent<RoomsList>>;
     http: HttpTestingController;
@@ -29,6 +36,8 @@ describe('RoomsList', () => {
   }> {
     const toast = { error: vi.fn(), success: vi.fn() };
     const openDialog = vi.fn(() => ({ afterClosed: () => of(confirmed) }));
+    const session = role === 'Admin' ? adminLoginResponseMock : loginResponseMock;
+    sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
 
     await TestBed.configureTestingModule({
       imports: [RoomsList],
@@ -80,6 +89,17 @@ describe('RoomsList', () => {
     );
     expect(fixture.nativeElement.querySelector('.rooms__delete').getAttribute('mattooltip')).toBe(
       'Supprimer',
+    );
+    http.verify();
+  });
+
+  it('hides add and delete actions for a non-admin user', async () => {
+    const { fixture, http } = await setup(true, roomsMock, 'User');
+
+    expect(fixture.nativeElement.querySelector('.rooms__add')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.rooms__delete')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.rooms__planning').getAttribute('href')).toBe(
+      `/in/bookings/${roomsMock[0].id}`,
     );
     http.verify();
   });

@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { loginResponseMock } from './auth.mock';
+import { adminLoginResponseMock, loginResponseMock } from './auth.mock';
 import { AUTH_SESSION_KEY, AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -28,6 +28,7 @@ describe('AuthService', () => {
     http.expectOne('/api/auth/login').flush(loginResponseMock);
 
     expect(auth.isAuthenticated()).toBe(true);
+    expect(auth.isAdmin()).toBe(false);
     expect(auth.accessToken()).toBe(loginResponseMock.accessToken);
     expect(auth.currentUser()?.email).toBe(loginResponseMock.user.email);
     expect(sessionStorage.getItem(AUTH_SESSION_KEY)).toContain(loginResponseMock.refreshToken);
@@ -82,7 +83,18 @@ describe('AuthService', () => {
     http.expectOne('/api/auth/logout').flush(null, { status: 204, statusText: 'No Content' });
 
     expect(auth.isAuthenticated()).toBe(false);
+    expect(auth.isAdmin()).toBe(false);
     expect(sessionStorage.getItem(AUTH_SESSION_KEY)).toBeNull();
+    http.verify();
+  });
+
+  it('treats an admin session as admin', async () => {
+    const { auth, http } = await setup();
+
+    auth.login({ email: 'jane.doe@example.com', password: 'password1' }).subscribe();
+    http.expectOne('/api/auth/login').flush(adminLoginResponseMock);
+
+    expect(auth.isAdmin()).toBe(true);
     http.verify();
   });
 });

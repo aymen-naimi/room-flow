@@ -1,6 +1,7 @@
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Users.Commands.CreateUser;
 using RoomFlow.Application.Tests.Fakes;
+using RoomFlow.Domain.Enums;
 
 namespace RoomFlow.Application.Tests.Features.Users.Commands;
 
@@ -22,6 +23,8 @@ public sealed class CreateUserCommandHandlerTests
         Assert.Single(store.Users);
         Assert.Equal(result.Id, store.Users[0].Id);
         Assert.Equal("hashed:password1", store.Users[0].PasswordHash);
+        Assert.Equal(UserRole.User, result.Role);
+        Assert.Equal(UserRole.User, store.Users[0].Role);
         Assert.NotEqual(default, store.Users[0].CreatedAt);
         Assert.Null(store.Users[0].LastSignIn);
     }

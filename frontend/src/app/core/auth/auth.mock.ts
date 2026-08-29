@@ -8,5 +8,14 @@ export const loginResponseMock: LoginResponse = {
     email: 'jane.doe@example.com',
     firstName: 'Jane',
     lastName: 'Doe',
+    role: 'User',
+  },
+};
+
+export const adminLoginResponseMock: LoginResponse = {
+  ...loginResponseMock,
+  user: {
+    ...loginResponseMock.user,
+    role: 'Admin',
   },
 };
