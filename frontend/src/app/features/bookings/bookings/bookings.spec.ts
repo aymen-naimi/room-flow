@@ -239,7 +239,7 @@ describe('Bookings', () => {
     http.verify();
   });
 
-  it('opens the create dialog from a calendar slot with a one-hour end', async () => {
+  it('opens the create dialog from a calendar slot with a 30-minute end', async () => {
     const { fixture, openDialog } = await setup({ mode: 'mine', confirmed: false });
     const unselect = vi.fn();
 
@@ -255,7 +255,29 @@ describe('Bookings', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           startsAt: '2026-08-28T08:00:00.000Z',
-          endsAt: '2026-08-28T09:00:00.000Z',
+          endsAt: '2026-08-28T08:30:00.000Z',
+        }),
+      }),
+    );
+  });
+
+  it('opens the create dialog with the dragged calendar range', async () => {
+    const { fixture, openDialog } = await setup({ mode: 'mine', confirmed: false });
+    const unselect = vi.fn();
+
+    await fixture.componentInstance['onSelect']({
+      start: new Date('2026-08-28T08:00:00Z'),
+      end: new Date('2026-08-28T10:00:00Z'),
+      view: { calendar: { unselect } },
+    } as never);
+
+    expect(unselect).toHaveBeenCalled();
+    expect(openDialog).toHaveBeenCalledWith(
+      BookingsCreateDialog,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          startsAt: '2026-08-28T08:00:00.000Z',
+          endsAt: '2026-08-28T10:00:00.000Z',
         }),
       }),
     );

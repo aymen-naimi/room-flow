@@ -24,7 +24,7 @@ import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
 import { Toast } from '../../../core/toast';
 import { Room } from '../../rooms/rooms.model';
 import { RoomsService } from '../../rooms/rooms.service';
-import { bookingRangeFromStart, defaultBookingRange, roomTone, toUtcIso } from '../bookings.helpers';
+import { bookingRangeFromSelection, defaultBookingRange, roomTone, toUtcIso } from '../bookings.helpers';
 import { BookingsCreateDialog } from '../bookings-create-dialog/bookings-create-dialog';
 import { Booking, GetBookingsFilter } from '../bookings.model';
 import { BookingsService } from '../bookings.service';
@@ -206,7 +206,7 @@ export class Bookings implements OnInit {
       return;
     }
 
-    const range = bookingRangeFromStart(info.start);
+    const range = bookingRangeFromSelection(info.start, info.end);
     await this.openCreateDialog(range.startsAt, range.endsAt);
   }
 

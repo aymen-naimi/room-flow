@@ -6,6 +6,7 @@ export const BOOKING_HOUR_START = 8;
 export const BOOKING_HOUR_END = 20;
 export const BOOKING_MIN_DURATION_MS = 15 * 60 * 1000;
 export const BOOKING_MAX_DURATION_MS = 12 * 60 * 60 * 1000;
+export const BOOKING_CLICK_DURATION_MINUTES = 30;
 export const BOOKING_HOURS = Array.from(
   { length: BOOKING_HOUR_END - BOOKING_HOUR_START + 1 },
   (_, index) => BOOKING_HOUR_START + index,
@@ -54,11 +55,60 @@ export function toUtcIsoFromParisLocal(dateYmd: string, hour: number, minute: nu
 export function bookingRangeFromStart(start: unknown): BookingRange {
   const wall = parisWallTime(new Date(toUtcIso(start)));
   const snapped = snapQuarter(wall.hour, wall.minute);
-  const end = addHourCapped(snapped.hour, snapped.minute);
+  const end = addMinutesCapped(snapped.hour, snapped.minute, BOOKING_CLICK_DURATION_MINUTES);
   return {
     startsAt: toUtcIsoFromParisLocal(wall.date, snapped.hour, snapped.minute),
     endsAt: toUtcIsoFromParisLocal(wall.date, end.hour, end.minute),
   };
+}
+
+export function bookingRangeFromSelection(start: unknown, end: unknown): BookingRange {
+  const startIso = toUtcIso(start);
+  const endIso = toUtcIso(end);
+  if (Date.parse(endIso) - Date.parse(startIso) <= BOOKING_MIN_DURATION_MS) {
+    return bookingRangeFromStart(start);
+  }
+
+  const startWall = parisWallTime(new Date(startIso));
+  const endWall = parisWallTime(new Date(endIso));
+  const snappedStart = snapQuarter(startWall.hour, startWall.minute);
+  const endOfDay = { hour: BOOKING_HOUR_END, minute: 0 };
+  let snappedEnd =
+    endWall.date !== startWall.date ? endOfDay : snapQuarter(endWall.hour, endWall.minute);
+
+  if (
+    snappedEnd.hour > BOOKING_HOUR_END ||
+    (snappedEnd.hour === BOOKING_HOUR_END && snappedEnd.minute > 0)
+  ) {
+    snappedEnd = endOfDay;
+  }
+
+  const startsAt = toUtcIsoFromParisLocal(
+    startWall.date,
+    snappedStart.hour,
+    snappedStart.minute,
+  );
+  let endsAt = toUtcIsoFromParisLocal(startWall.date, snappedEnd.hour, snappedEnd.minute);
+
+  if (Date.parse(endsAt) <= Date.parse(startsAt)) {
+    return bookingRangeFromStart(start);
+  }
+
+  const maxEndsAtMs = Date.parse(startsAt) + BOOKING_MAX_DURATION_MS;
+  if (Date.parse(endsAt) > maxEndsAtMs) {
+    const maxWall = parisWallTime(new Date(maxEndsAtMs));
+    let capped =
+      maxWall.date !== startWall.date ? endOfDay : snapQuarter(maxWall.hour, maxWall.minute);
+    if (
+      capped.hour > BOOKING_HOUR_END ||
+      (capped.hour === BOOKING_HOUR_END && capped.minute > 0)
+    ) {
+      capped = endOfDay;
+    }
+    endsAt = toUtcIsoFromParisLocal(startWall.date, capped.hour, capped.minute);
+  }
+
+  return { startsAt, endsAt };
 }
 
 export function defaultBookingRange(now = new Date()): BookingRange {
@@ -87,12 +137,22 @@ export function parisTodayDate(now = new Date()): Date {
 }
 
 export function addHourCapped(hour: number, minute: number): { hour: number; minute: number } {
-  const endHour = hour + 1;
-  if (endHour > BOOKING_HOUR_END || (endHour === BOOKING_HOUR_END && minute > 0)) {
+  return addMinutesCapped(hour, minute, 60);
+}
+
+function addMinutesCapped(
+  hour: number,
+  minute: number,
+  minutes: number,
+): { hour: number; minute: number } {
+  const total = hour * 60 + minute + minutes;
+  const endHour = Math.floor(total / 60);
+  const endMinute = total % 60;
+  if (endHour > BOOKING_HOUR_END || (endHour === BOOKING_HOUR_END && endMinute > 0)) {
     return { hour: BOOKING_HOUR_END, minute: 0 };
   }
 
-  return { hour: endHour, minute };
+  return { hour: endHour, minute: endMinute };
 }
 
 function nextQuarterInBusinessHours(now: Date): { date: string; hour: number; minute: number } {

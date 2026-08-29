@@ -1,5 +1,6 @@
 import {
   addHourCapped,
+  bookingRangeFromSelection,
   bookingRangeFromStart,
   defaultBookingRange,
   minutesForHour,
@@ -36,10 +37,58 @@ describe('booking helpers', () => {
     expect(minutesForHour(20)).toEqual([0]);
   });
 
-  it('builds a one-hour range from a calendar slot start', () => {
+  it('builds a 30-minute range from a calendar slot start', () => {
     expect(bookingRangeFromStart(new Date('2026-08-28T08:00:00Z'))).toEqual({
       startsAt: '2026-08-28T08:00:00.000Z',
-      endsAt: '2026-08-28T09:00:00.000Z',
+      endsAt: '2026-08-28T08:30:00.000Z',
+    });
+  });
+
+  it('defaults a 15-minute calendar click to 30 minutes', () => {
+    expect(
+      bookingRangeFromSelection(
+        new Date('2026-08-28T08:00:00Z'),
+        new Date('2026-08-28T08:15:00Z'),
+      ),
+    ).toEqual({
+      startsAt: '2026-08-28T08:00:00.000Z',
+      endsAt: '2026-08-28T08:30:00.000Z',
+    });
+  });
+
+  it('keeps a two-hour calendar drag', () => {
+    expect(
+      bookingRangeFromSelection(
+        new Date('2026-08-28T08:00:00Z'),
+        new Date('2026-08-28T10:00:00Z'),
+      ),
+    ).toEqual({
+      startsAt: '2026-08-28T08:00:00.000Z',
+      endsAt: '2026-08-28T10:00:00.000Z',
+    });
+  });
+
+  it('keeps a 30-minute calendar drag', () => {
+    expect(
+      bookingRangeFromSelection(
+        new Date('2026-08-28T08:00:00Z'),
+        new Date('2026-08-28T08:30:00Z'),
+      ),
+    ).toEqual({
+      startsAt: '2026-08-28T08:00:00.000Z',
+      endsAt: '2026-08-28T08:30:00.000Z',
+    });
+  });
+
+  it('caps a selection that ends the next day at 20:00', () => {
+    expect(
+      bookingRangeFromSelection(
+        new Date('2026-08-28T08:00:00Z'),
+        new Date('2026-08-29T08:00:00Z'),
+      ),
+    ).toEqual({
+      startsAt: '2026-08-28T08:00:00.000Z',
+      endsAt: '2026-08-28T18:00:00.000Z',
     });
   });
 
