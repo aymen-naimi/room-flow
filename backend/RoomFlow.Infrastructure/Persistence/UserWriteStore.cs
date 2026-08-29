@@ -35,6 +35,18 @@ public sealed class UserWriteStore : IUserWriteStore
         }
     }
 
+    public async Task UpdateLastSignInAsync(
+        Guid userId,
+        DateTimeOffset lastSignIn,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.Users
+            .Where(user => user.Id == userId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(user => user.LastSignIn, lastSignIn),
+                cancellationToken);
+    }
+
     private static bool IsUniqueEmailViolation(DbUpdateException exception)
     {
         for (Exception? current = exception; current is not null; current = current.InnerException)

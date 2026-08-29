@@ -168,7 +168,8 @@ public sealed class CreateBookingCommandHandlerTests
             Email = "ada@example.com",
             PasswordHash = "hash",
             FirstName = "Ada",
-            LastName = "Lovelace"
+            LastName = "Lovelace",
+            CreatedAt = DateTimeOffset.UtcNow
         };
         rooms.Rooms.Add(room);
         users.Users.Add(user);

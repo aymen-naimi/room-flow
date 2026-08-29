@@ -22,7 +22,7 @@ public sealed class ValidationBehaviorTests
 
         await Assert.ThrowsAsync<ValidationException>(
             () => behavior.Handle(
-                new CreateRoomCommand("", 0, ""),
+                new CreateRoomCommand("", 0, "", Guid.Empty),
                 Next,
                 CancellationToken.None));
 
@@ -36,7 +36,7 @@ public sealed class ValidationBehaviorTests
         var expected = new RoomDto(Guid.NewGuid(), "Salle A", 8, "RDC", DateTimeOffset.UtcNow);
 
         var result = await behavior.Handle(
-            new CreateRoomCommand("Salle A", 8, "RDC"),
+            new CreateRoomCommand("Salle A", 8, "RDC", Guid.NewGuid()),
             _ => Task.FromResult(expected),
             CancellationToken.None);
 

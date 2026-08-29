@@ -7,6 +7,7 @@ public class Booking
     public required Guid UserId { get; set; }
     public required DateTimeOffset StartsAt { get; set; }
     public required DateTimeOffset EndsAt { get; set; }
+    public DateTimeOffset CreatedAt { get; init; }
     public required Room Room { get; set; }
     public required User User { get; set; }
 }

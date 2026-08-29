@@ -15,6 +15,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
     private static string? DummyPasswordHash;
 
     private readonly IUserReadStore _readStore;
+    private readonly IUserWriteStore _writeStore;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAccessTokenGenerator _accessTokenGenerator;
     private readonly IRefreshTokenFactory _refreshTokenFactory;
@@ -22,12 +23,14 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
 
     public LoginCommandHandler(
         IUserReadStore readStore,
+        IUserWriteStore writeStore,
         IPasswordHasher passwordHasher,
         IAccessTokenGenerator accessTokenGenerator,
         IRefreshTokenFactory refreshTokenFactory,
         IRefreshTokenStore refreshTokenStore)
     {
         _readStore = readStore;
+        _writeStore = writeStore;
         _passwordHasher = passwordHasher;
         _accessTokenGenerator = accessTokenGenerator;
         _refreshTokenFactory = refreshTokenFactory;
@@ -45,6 +48,10 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         {
             throw new InvalidCredentialsException();
         }
+
+        var lastSignIn = DateTimeOffset.UtcNow;
+        await _writeStore.UpdateLastSignInAsync(user.Id, lastSignIn, cancellationToken);
+        user.LastSignIn = lastSignIn;
 
         return await IssueSessionAsync(user, cancellationToken);
     }

@@ -15,4 +15,14 @@ internal sealed class FakeUserWriteStore : IUserWriteStore
         Users.Add(user);
         return Task.CompletedTask;
     }
+
+    public Task UpdateLastSignInAsync(
+        Guid userId,
+        DateTimeOffset lastSignIn,
+        CancellationToken cancellationToken = default)
+    {
+        var user = Users.First(item => item.Id == userId);
+        user.LastSignIn = lastSignIn;
+        return Task.CompletedTask;
+    }
 }

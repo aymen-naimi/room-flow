@@ -41,7 +41,12 @@ public sealed class RoomsController : ControllerBase
         [FromBody] CreateRoomRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new CreateRoomCommand(request.Name, request.Capacity, request.Location);
+        if (!UserClaims.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var command = new CreateRoomCommand(request.Name, request.Capacity, request.Location, userId);
         var room = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = room.Id }, ToResponse(room));
     }

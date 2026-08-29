@@ -22,6 +22,8 @@ public sealed class CreateUserCommandHandlerTests
         Assert.Single(store.Users);
         Assert.Equal(result.Id, store.Users[0].Id);
         Assert.Equal("hashed:password1", store.Users[0].PasswordHash);
+        Assert.NotEqual(default, store.Users[0].CreatedAt);
+        Assert.Null(store.Users[0].LastSignIn);
     }
 
     [Fact]

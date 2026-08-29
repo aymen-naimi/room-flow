@@ -23,6 +23,10 @@ public class RoomFlowDbContext : DbContext
             entity.Property(room => room.Location).HasMaxLength(200);
             entity.HasIndex(room => room.Name).IsUnique();
             entity.Property(room => room.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.HasOne(room => room.CreatedBy)
+                .WithMany(user => user.CreatedRooms)
+                .HasForeignKey(room => room.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -32,10 +36,13 @@ public class RoomFlowDbContext : DbContext
             entity.Property(user => user.PasswordHash).HasMaxLength(500);
             entity.Property(user => user.FirstName).HasMaxLength(100);
             entity.Property(user => user.LastName).HasMaxLength(100);
+            entity.Property(user => user.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
 
         modelBuilder.Entity<Booking>(entity =>
         {
+            entity.Property(booking => booking.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+
             entity.HasOne(booking => booking.Room)
                 .WithMany(room => room.Bookings)
                 .HasForeignKey(booking => booking.RoomId)

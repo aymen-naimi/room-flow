@@ -7,5 +7,7 @@ public class Room
     public required int Capacity { get; set; }
     public required string Location { get; set; }
     public DateTimeOffset CreatedAt { get; init; }
+    public required Guid CreatedByUserId { get; init; }
+    public User CreatedBy { get; set; } = null!;
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

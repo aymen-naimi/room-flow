@@ -62,6 +62,7 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
                 UserId = request.UserId,
                 StartsAt = startsAt,
                 EndsAt = endsAt,
+                CreatedAt = DateTimeOffset.UtcNow,
                 Room = null!,
                 User = null!
             };

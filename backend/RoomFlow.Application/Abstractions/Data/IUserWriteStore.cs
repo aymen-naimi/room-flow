@@ -7,4 +7,6 @@ public interface IUserWriteStore
     Task<bool> ExistsWithEmailAsync(string email, CancellationToken cancellationToken = default);
 
     Task AddAsync(User user, CancellationToken cancellationToken = default);
+
+    Task UpdateLastSignInAsync(Guid userId, DateTimeOffset lastSignIn, CancellationToken cancellationToken = default);
 }

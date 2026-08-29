@@ -5,7 +5,8 @@ using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
 
-public record CreateRoomCommand(string Name, int Capacity, string Location) : IRequest<RoomDto>;
+public record CreateRoomCommand(string Name, int Capacity, string Location, Guid CreatedByUserId)
+    : IRequest<RoomDto>;
 
 public sealed class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, RoomDto>
 {
@@ -29,7 +30,8 @@ public sealed class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand
             Name = request.Name,
             Capacity = request.Capacity,
             Location = request.Location,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedByUserId = request.CreatedByUserId
         };
 
         await _writeStore.AddAsync(room, cancellationToken);

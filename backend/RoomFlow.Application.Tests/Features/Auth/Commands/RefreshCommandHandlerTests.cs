@@ -17,7 +17,8 @@ public sealed class RefreshCommandHandlerTests
             Email = "ada@example.com",
             PasswordHash = "hashed:password1",
             FirstName = "Ada",
-            LastName = "Lovelace"
+            LastName = "Lovelace",
+            CreatedAt = DateTimeOffset.UtcNow
         };
         var factory = new FakeRefreshTokenFactory();
         var store = new FakeRefreshTokenStore();
@@ -38,6 +39,7 @@ public sealed class RefreshCommandHandlerTests
         Assert.Equal("refresh-raw-2", result.RefreshToken);
         Assert.NotNull(store.Tokens[0].RevokedAt);
         Assert.Equal(2, store.Tokens.Count);
+        Assert.Null(user.LastSignIn);
     }
 
     [Fact]

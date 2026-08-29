@@ -16,7 +16,8 @@ public sealed class DeleteRoomCommandHandlerTests
             Name = "Salle A",
             Capacity = 8,
             Location = "RDC",
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedByUserId = Guid.NewGuid()
         };
         await store.AddAsync(room);
         var handler = new DeleteRoomCommandHandler(store);

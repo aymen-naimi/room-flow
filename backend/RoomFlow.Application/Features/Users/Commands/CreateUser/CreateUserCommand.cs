@@ -35,7 +35,8 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
             Email = email,
             PasswordHash = _passwordHasher.Hash(request.Password),
             FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim()
+            LastName = request.LastName.Trim(),
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         await _writeStore.AddAsync(user, cancellationToken);
