@@ -33,6 +33,7 @@ import {
   bookingDraftFromIso,
   minutesForHour,
   parisTodayDate,
+  roomCapacityLabel,
   toUtcIsoFromParisLocal,
   toYmdFromDate,
 } from '../bookings.helpers';
@@ -87,6 +88,7 @@ export class BookingsCreateDialog {
   protected readonly minDurationError = BookingCreateErrorMessage.MinDuration;
   protected readonly maxDurationError = BookingCreateErrorMessage.MaxDuration;
   protected readonly pastError = BookingCreateErrorMessage.Past;
+  protected readonly roomCapacityLabel = roomCapacityLabel;
 
   protected readonly lockedRoom = this.data.rooms.find((room) => room.id === this.data.roomId);
 

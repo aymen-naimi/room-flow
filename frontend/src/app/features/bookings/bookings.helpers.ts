@@ -250,6 +250,10 @@ export function isBookingDayStart(value: Date): boolean {
   return wall.hour === BOOKING_HOUR_START && wall.minute === 0;
 }
 
+export function roomCapacityLabel(name: string, capacity?: number): string {
+  return capacity == null ? name : `${name} (${capacity} places)`;
+}
+
 export function roomTone(roomId: string): number {
   let hash = 0;
   for (const char of roomId) {

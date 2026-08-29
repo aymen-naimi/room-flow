@@ -73,6 +73,7 @@ describe('RoomsList', () => {
     const { fixture, http } = await setup();
 
     expect(fixture.nativeElement.textContent).toContain(roomsMock[0].name);
+    expect(fixture.nativeElement.textContent).toContain('Capacité (en places)');
     expect(fixture.nativeElement.textContent).toContain(roomsMock[0].capacity);
     expect(fixture.nativeElement.textContent).toContain(roomsMock[0].location);
     expect(fixture.nativeElement.querySelector('.rooms__add').getAttribute('href')).toBe(

@@ -5,6 +5,7 @@ import {
   defaultBookingRange,
   isBookingDayStart,
   minutesForHour,
+  roomCapacityLabel,
   roomTone,
   toUtcIso,
   toUtcIsoFromParisLocal,
@@ -26,6 +27,11 @@ describe('booking helpers', () => {
     expect(roomTone('11111111-1111-1111-1111-111111111111')).toBeGreaterThanOrEqual(0);
     expect(roomTone('11111111-1111-1111-1111-111111111111')).toBeLessThan(4);
     expect(roomTone('a')).toBe(roomTone('a'));
+  });
+
+  it('appends capacity to a room name', () => {
+    expect(roomCapacityLabel('Salle A', 7)).toBe('Salle A (7 places)');
+    expect(roomCapacityLabel('Salle A')).toBe('Salle A');
   });
 
   it('converts a Paris local wall time to UTC ISO across DST', () => {

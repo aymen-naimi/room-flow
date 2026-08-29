@@ -11,7 +11,7 @@
             (selectionChange)="onRoomChange($event.value)"
           >
             @for (room of rooms(); track room.id) {
-              <mat-option [value]="room.id">{{ room.name }}</mat-option>
+              <mat-option [value]="room.id">{{ roomCapacityLabel(room.name, room.capacity) }}</mat-option>
             }
           </mat-select>
         </mat-form-field>

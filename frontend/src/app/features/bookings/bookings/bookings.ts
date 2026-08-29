@@ -33,6 +33,7 @@ import {
   bookingRangeFromSelection,
   defaultBookingRange,
   isBookingDayStart,
+  roomCapacityLabel,
   roomTone,
   toUtcIso,
 } from '../bookings.helpers';
@@ -104,6 +105,7 @@ export class Bookings implements OnInit {
   protected readonly reserveHint = computed(() =>
     this.isRoomMode() && !this.selectedRoomId() ? BookingsReserveHint : '',
   );
+  protected readonly roomCapacityLabel = roomCapacityLabel;
 
   private currentRange: { from: string; to: string } | null = null;
 
@@ -294,7 +296,9 @@ export class Bookings implements OnInit {
   private toEvent(booking: Booking): EventInput {
     return {
       id: booking.id,
-      title: this.isRoomMode() ? booking.userDisplayName : booking.roomName,
+      title: this.isRoomMode()
+        ? booking.userDisplayName
+        : roomCapacityLabel(booking.roomName, this.roomCapacity(booking.roomId)),
       start: booking.startsAt,
       end: booking.endsAt,
       extendedProps: {
@@ -302,6 +306,10 @@ export class Bookings implements OnInit {
         roomId: booking.roomId,
       },
     };
+  }
+
+  private roomCapacity(roomId: string): number | undefined {
+    return this.rooms().find((room) => room.id === roomId)?.capacity;
   }
 
   private eventClassNames(extendedProps: Record<string, unknown>): string[] {

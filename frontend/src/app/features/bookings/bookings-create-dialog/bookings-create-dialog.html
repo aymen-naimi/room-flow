@@ -71,13 +71,13 @@
       }
 
       @if (lockedRoom; as room) {
-        <p class="bookings-create__room">{{ room.name }}</p>
+        <p class="bookings-create__room">{{ roomCapacityLabel(room.name, room.capacity) }}</p>
       } @else {
         <mat-form-field appearance="outline">
           <mat-label>Salle</mat-label>
           <mat-select formControlName="roomId">
             @for (room of data.rooms; track room.id) {
-              <mat-option [value]="room.id">{{ room.name }}</mat-option>
+              <mat-option [value]="room.id">{{ roomCapacityLabel(room.name, room.capacity) }}</mat-option>
             }
           </mat-select>
           @if (form.controls.roomId.hasError('required')) {

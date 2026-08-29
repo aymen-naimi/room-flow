@@ -161,6 +161,9 @@ describe('Bookings', () => {
     expect(fixture.nativeElement.querySelector('full-calendar')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.bookings__empty')).toBeNull();
     expect(fixture.nativeElement.querySelector('.bookings__room')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain(
+      `${roomHorizonMock.name} (${roomHorizonMock.capacity} places)`,
+    );
     expect(fixture.nativeElement.querySelector('.bookings__reserve').disabled).toBe(false);
     const events = fixture.componentInstance['events']();
     expect(events.some((event) => event.id === bookingAdaMock.id)).toBe(true);
@@ -195,7 +198,7 @@ describe('Bookings', () => {
     expect(bookingsRequest?.request.params.get('roomId')).toBeNull();
     expect(
       fixture.componentInstance['events']().find((event) => event.id === bookingAdaMock.id)?.title,
-    ).toBe(bookingAdaMock.roomName);
+    ).toBe(`${bookingAdaMock.roomName} (${roomHorizonMock.capacity} places)`);
     http.verify();
   });
 
