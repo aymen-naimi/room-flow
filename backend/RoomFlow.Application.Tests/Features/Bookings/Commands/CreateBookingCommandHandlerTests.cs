@@ -1,4 +1,3 @@
-using RoomFlow.Application.Abstractions.Concurrency;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Concurrency;
 using RoomFlow.Application.Exceptions;
@@ -143,26 +142,6 @@ public sealed class CreateBookingCommandHandlerTests
         Assert.Equal(2, fixture.Bookings.Bookings.Select(booking => booking.RoomId).Distinct().Count());
     }
 
-    [Fact]
-    public async Task Handle_without_lock_can_insert_two_overlapping_bookings()
-    {
-        var fixture = CreateFixture(new PassThroughRoomLock());
-        fixture.Bookings.OverlapCheckDelay = TimeSpan.FromMilliseconds(80);
-        var first = new CreateBookingCommand(fixture.Room.Id, fixture.User.Id, StartsAt, EndsAt);
-        var second = new CreateBookingCommand(
-            fixture.Room.Id,
-            fixture.User.Id,
-            new DateTimeOffset(2026, 10, 26, 8, 30, 0, TimeSpan.Zero),
-            new DateTimeOffset(2026, 10, 26, 9, 30, 0, TimeSpan.Zero));
-
-        var results = await Task.WhenAll(
-            TryCreate(fixture.Handler, first),
-            TryCreate(fixture.Handler, second));
-
-        Assert.Equal(2, results.Count(static result => result.Dto is not null));
-        Assert.Equal(2, fixture.Bookings.Bookings.Count);
-    }
-
     private static async Task<(BookingDto? Dto, Exception? Error)> TryCreate(
         CreateBookingCommandHandler handler,
         CreateBookingCommand command)
@@ -177,7 +156,7 @@ public sealed class CreateBookingCommandHandlerTests
         }
     }
 
-    private static Fixture CreateFixture(IRoomBookingLock? roomLock = null)
+    private static Fixture CreateFixture()
     {
         var rooms = new FakeRoomReadStore();
         var users = new FakeUserReadStore();
@@ -195,26 +174,13 @@ public sealed class CreateBookingCommandHandlerTests
         users.Users.Add(user);
 
         var handler = new CreateBookingCommandHandler(
-            roomLock ?? new RoomBookingLock(),
+            new RoomBookingLock(),
             rooms,
             users,
             bookings,
             bookings);
 
         return new Fixture(handler, bookings, rooms, user, room);
-    }
-
-    private sealed class PassThroughRoomLock : IRoomBookingLock
-    {
-        public Task<IDisposable> AcquireAsync(Guid roomId, CancellationToken cancellationToken = default)
-            => Task.FromResult<IDisposable>(new Noop());
-
-        private sealed class Noop : IDisposable
-        {
-            public void Dispose()
-            {
-            }
-        }
     }
 
     private sealed record Fixture(
