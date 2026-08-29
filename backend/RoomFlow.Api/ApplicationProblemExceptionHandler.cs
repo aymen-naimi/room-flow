@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using RoomFlow.Application.Features.Auth.Commands.Login;
-using RoomFlow.Application.Features.Bookings.Commands.CreateBooking;
-using RoomFlow.Application.Features.Bookings.Commands.DeleteBooking;
-using RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
-using RoomFlow.Application.Features.Users.Commands.CreateUser;
+using RoomFlow.Application.Exceptions;
 
 namespace RoomFlow.Api;
 

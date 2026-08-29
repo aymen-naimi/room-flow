@@ -1,6 +1,7 @@
 using MediatR;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Application.Features.Auth.Commands.Login;
@@ -78,12 +79,4 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
             _refreshTokenFactory,
             _refreshTokenStore,
             cancellationToken);
-}
-
-public sealed class InvalidCredentialsException : Exception
-{
-    public InvalidCredentialsException()
-        : base("Invalid email or password.")
-    {
-    }
 }

@@ -1,6 +1,7 @@
 using MediatR;
 using RoomFlow.Application.Abstractions.Concurrency;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Application.Features.Bookings.Commands.CreateBooking;
@@ -76,21 +77,5 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
                 booking.StartsAt,
                 booking.EndsAt);
         }
-    }
-}
-
-public sealed class BookingOverlapException : Exception
-{
-    public BookingOverlapException(Guid roomId)
-        : base($"The room '{roomId}' is already booked for that time range.")
-    {
-    }
-}
-
-public sealed class RoomNotFoundException : Exception
-{
-    public RoomNotFoundException(Guid roomId)
-        : base($"Room '{roomId}' was not found.")
-    {
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using RoomFlow.Application.Abstractions.Data;
-using RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Infrastructure.Persistence;

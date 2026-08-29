@@ -1,6 +1,7 @@
 using RoomFlow.Application.Abstractions.Concurrency;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Concurrency;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Bookings.Commands.CreateBooking;
 using RoomFlow.Application.Tests.Fakes;
 using RoomFlow.Domain.Entities;

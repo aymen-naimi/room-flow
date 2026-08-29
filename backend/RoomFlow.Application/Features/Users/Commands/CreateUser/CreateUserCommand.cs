@@ -1,6 +1,7 @@
 using MediatR;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Application.Features.Users.Commands.CreateUser;
@@ -40,13 +41,5 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         await _writeStore.AddAsync(user, cancellationToken);
 
         return new UserDto(user.Id, user.Email, user.FirstName, user.LastName);
-    }
-}
-
-public sealed class EmailAlreadyTakenException : Exception
-{
-    public EmailAlreadyTakenException(string email)
-        : base($"A user with email '{email}' already exists.")
-    {
     }
 }

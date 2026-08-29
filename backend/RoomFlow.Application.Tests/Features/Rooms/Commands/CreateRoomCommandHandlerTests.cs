@@ -1,3 +1,4 @@
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
 using RoomFlow.Application.Tests.Fakes;
 

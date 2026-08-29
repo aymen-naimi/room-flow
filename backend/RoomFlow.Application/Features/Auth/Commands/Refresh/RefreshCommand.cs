@@ -1,6 +1,7 @@
 using MediatR;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Auth.Commands.Login;
 
 namespace RoomFlow.Application.Features.Auth.Commands.Refresh;

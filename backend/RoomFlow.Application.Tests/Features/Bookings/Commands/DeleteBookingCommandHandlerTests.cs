@@ -1,4 +1,5 @@
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Bookings.Commands.DeleteBooking;
 using RoomFlow.Application.Tests.Fakes;
 

@@ -1,5 +1,6 @@
 using MediatR;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Exceptions;
 using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
@@ -34,13 +35,5 @@ public sealed class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand
         await _writeStore.AddAsync(room, cancellationToken);
 
         return new RoomDto(room.Id, room.Name, room.Capacity, room.Location, room.CreatedAt);
-    }
-}
-
-public sealed class RoomNameAlreadyTakenException : Exception
-{
-    public RoomNameAlreadyTakenException(string name)
-        : base($"A room named '{name}' already exists.")
-    {
     }
 }

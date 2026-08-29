@@ -1,5 +1,6 @@
 using MediatR;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Exceptions;
 
 namespace RoomFlow.Application.Features.Bookings.Commands.DeleteBooking;
 
@@ -30,13 +31,5 @@ public sealed class DeleteBookingCommandHandler : IRequestHandler<DeleteBookingC
         }
 
         return await _writeStore.RemoveAsync(request.Id, cancellationToken);
-    }
-}
-
-public sealed class BookingNotOwnedException : Exception
-{
-    public BookingNotOwnedException(Guid bookingId)
-        : base($"Booking '{bookingId}' belongs to another user.")
-    {
     }
 }
