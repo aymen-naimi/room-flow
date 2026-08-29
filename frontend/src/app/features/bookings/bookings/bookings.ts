@@ -15,6 +15,8 @@ import {
   EventDisplayInfo,
   EventInput,
   FullCalendarModule,
+  SlotHeaderInfo,
+  SlotLaneInfo,
 } from '@fullcalendar/angular';
 import interactionPlugin from '@fullcalendar/angular/interaction';
 import timeGridPlugin from '@fullcalendar/angular/timegrid';
@@ -27,7 +29,13 @@ import { Page } from '../../../core/page/page';
 import { Toast } from '../../../core/toast';
 import { Room } from '../../rooms/rooms.model';
 import { RoomsService } from '../../rooms/rooms.service';
-import { bookingRangeFromSelection, defaultBookingRange, roomTone, toUtcIso } from '../bookings.helpers';
+import {
+  bookingRangeFromSelection,
+  defaultBookingRange,
+  isBookingDayStart,
+  roomTone,
+  toUtcIso,
+} from '../bookings.helpers';
 import { BookingsCreateDialog } from '../bookings-create-dialog/bookings-create-dialog';
 import { Booking, GetBookingsFilter } from '../bookings.model';
 import { BookingsService } from '../bookings.service';
@@ -126,6 +134,8 @@ export class Bookings implements OnInit {
       void this.onEventClick(info);
     },
     eventClass: (arg: EventDisplayInfo) => this.eventClassNames(arg.event.extendedProps).join(' '),
+    slotLaneClass: (arg: SlotLaneInfo) => this.slotStartClass(arg.date),
+    slotHeaderClass: (arg: SlotHeaderInfo) => this.slotStartClass(arg.date),
     selectAllow: (span) => this.isFuture(span.start),
   };
 
@@ -303,6 +313,10 @@ export class Bookings implements OnInit {
       mine ? 'bookings__event--mine' : 'bookings__event--other',
       `bookings__event--room-${roomTone(roomId)}`,
     ];
+  }
+
+  private slotStartClass(date: Date): string {
+    return isBookingDayStart(date) ? 'bookings__slot--start' : '';
   }
 
   private isFuture(start: unknown): boolean {

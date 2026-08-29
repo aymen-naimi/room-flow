@@ -245,6 +245,11 @@ function fromParisLocal(dateYmd: string, hour: number, minute: number): Date {
   return new Date(instant);
 }
 
+export function isBookingDayStart(value: Date): boolean {
+  const wall = parisWallTime(value);
+  return wall.hour === BOOKING_HOUR_START && wall.minute === 0;
+}
+
 export function roomTone(roomId: string): number {
   let hash = 0;
   for (const char of roomId) {

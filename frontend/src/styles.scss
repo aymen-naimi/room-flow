@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use 'variables' as tokens;
+@use 'bookings-calendar';
 
 html {
   color-scheme: light;

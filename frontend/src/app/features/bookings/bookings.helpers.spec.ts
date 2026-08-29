@@ -3,6 +3,7 @@ import {
   bookingRangeFromSelection,
   bookingRangeFromStart,
   defaultBookingRange,
+  isBookingDayStart,
   minutesForHour,
   roomTone,
   toUtcIso,
@@ -13,6 +14,12 @@ describe('booking helpers', () => {
   it('converts Date and ISO strings to UTC ISO', () => {
     expect(toUtcIso(new Date('2026-10-25T08:00:00Z'))).toBe('2026-10-25T08:00:00.000Z');
     expect(toUtcIso('2026-10-25T10:00:00+02:00')).toBe('2026-10-25T08:00:00.000Z');
+  });
+
+  it('detects the 8:00 Paris start of the booking day across DST', () => {
+    expect(isBookingDayStart(new Date('2026-08-28T06:00:00.000Z'))).toBe(true);
+    expect(isBookingDayStart(new Date('2026-01-15T07:00:00.000Z'))).toBe(true);
+    expect(isBookingDayStart(new Date('2026-08-28T06:15:00.000Z'))).toBe(false);
   });
 
   it('maps a room id to a stable tone bucket', () => {
