@@ -48,13 +48,7 @@ flowchart LR
 Prerequisites: .NET 10 SDK, Node.js 22, SQL Server LocalDB.
 
 1. Copy [`backend/RoomFlow.Api/appsettings.example.json`](backend/RoomFlow.Api/appsettings.example.json) to `backend/RoomFlow.Api/appsettings.json` and set the connection string and JWT signing key (at least 32 bytes).
-2. Apply migrations:
-
-```bash
-dotnet ef database update --project backend/RoomFlow.Infrastructure --startup-project backend/RoomFlow.Api
-```
-
-3. Start the API:
+2. Start the API (`APPLY_MIGRATIONS=true` in [`launchSettings.json`](backend/RoomFlow.Api/Properties/launchSettings.json) applies pending migrations on startup):
 
 ```bash
 dotnet run --project backend/RoomFlow.Api
@@ -62,7 +56,13 @@ dotnet run --project backend/RoomFlow.Api
 
 The API listens on http://localhost:5205 (Swagger: http://localhost:5205/swagger).
 
-4. Start the frontend:
+To apply migrations without starting the API:
+
+```bash
+dotnet ef database update --project backend/RoomFlow.Infrastructure --startup-project backend/RoomFlow.Api
+```
+
+3. Start the frontend:
 
 ```bash
 cd frontend
@@ -105,7 +105,7 @@ The browser calls the Container Apps API by HTTPS (CORS). Local and Docker still
 
 ### One-time Azure / GitHub setup
 
-1. Create an Azure AD app registration (or user-assigned identity) and a **federated credential** for this repo (`repo:OWNER/room-flow:ref:refs/heads/main`).
+1. Create an Azure AD app registration (or user-assigned identity) and a **federated credential** for this repo (`repo:aymen-naimi/room-flow:ref:refs/heads/main`).
 2. Grant that identity **Contributor** and **User Access Administrator** on the subscription or on resource group `rg-roomflow` (role assignments are required so the Container App identity can pull from ACR).
 3. Add GitHub Actions secrets:
 
@@ -119,10 +119,5 @@ The browser calls the Container Apps API by HTTPS (CORS). Local and Docker still
 | `AZURE_STATIC_WEB_APPS_API_TOKEN` | Optional. If omitted, the workflow reads the token from the Static Web App after Bicep create |
 
 4. Push to `main` (or run **Deploy Azure** via workflow_dispatch).
-
-After a successful deploy, the workflow logs / Azure portal show:
-
-- Static Web App URL: `https://<name>.azurestaticapps.net`
-- API health: `https://<container-app-fqdn>/health`
 
 Swagger is disabled on Azure (`ENABLE_SWAGGER=false`). Use it locally: http://localhost:5205/swagger or http://localhost:8080/swagger.
