@@ -57,8 +57,14 @@
         </div>
       </div>
 
-      @if (form.hasError('range') || form.hasError('minDuration')) {
+      @if (form.hasError('range')) {
         <p class="bookings-create__error" role="alert">{{ rangeError }}</p>
+      }
+      @if (form.hasError('minDuration')) {
+        <p class="bookings-create__error" role="alert">{{ minDurationError }}</p>
+      }
+      @if (form.hasError('maxDuration')) {
+        <p class="bookings-create__error" role="alert">{{ maxDurationError }}</p>
       }
       @if (form.hasError('past')) {
         <p class="bookings-create__error" role="alert">{{ pastError }}</p>

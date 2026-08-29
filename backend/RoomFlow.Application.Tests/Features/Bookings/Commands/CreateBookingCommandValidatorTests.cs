@@ -49,12 +49,26 @@ public sealed class CreateBookingCommandValidatorTests
     }
 
     [Fact]
-    public void Duration_above_8_hours_is_rejected()
+    public void Duration_of_12_hours_is_accepted()
     {
         var command = Valid() with
         {
             StartsAt = Now,
-            EndsAt = Now.AddHours(8).AddMinutes(1)
+            EndsAt = Now.AddHours(12)
+        };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Duration_above_12_hours_is_rejected()
+    {
+        var command = Valid() with
+        {
+            StartsAt = Now,
+            EndsAt = Now.AddHours(12).AddMinutes(1)
         };
 
         var result = _validator.TestValidate(command);

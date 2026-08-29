@@ -4,6 +4,8 @@ export const BOOKING_TIME_ZONE = 'Europe/Paris';
 export const BOOKING_MINUTES = [0, 15, 30, 45] as const;
 export const BOOKING_HOUR_START = 8;
 export const BOOKING_HOUR_END = 20;
+export const BOOKING_MIN_DURATION_MS = 15 * 60 * 1000;
+export const BOOKING_MAX_DURATION_MS = 12 * 60 * 60 * 1000;
 export const BOOKING_HOURS = Array.from(
   { length: BOOKING_HOUR_END - BOOKING_HOUR_START + 1 },
   (_, index) => BOOKING_HOUR_START + index,

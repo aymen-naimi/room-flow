@@ -28,6 +28,8 @@ import { MatOption, MatSelect } from '@angular/material/select';
 import { firstValueFrom } from 'rxjs';
 import {
   BOOKING_HOURS,
+  BOOKING_MAX_DURATION_MS,
+  BOOKING_MIN_DURATION_MS,
   bookingDraftFromIso,
   minutesForHour,
   parisTodayDate,
@@ -41,7 +43,10 @@ export const BookingCreateErrorMessage = {
   Overlap: 'Ce créneau chevauche une réservation existante pour cette salle.',
   Failed: 'Impossible de créer la réservation.',
   Range: 'La fin doit être après le début.',
+  MinDuration: 'La réservation doit durer au moins 15 minutes.',
+  MaxDuration: 'La réservation ne peut pas dépasser 12 heures.',
   Past: 'Le début ne peut pas être dans le passé.',
+  Invalid: 'Les informations de la réservation sont invalides.',
 } as const;
 
 @Component({
@@ -79,6 +84,8 @@ export class BookingsCreateDialog {
   protected readonly hours = BOOKING_HOURS;
   protected readonly minDate = parisTodayDate();
   protected readonly rangeError = BookingCreateErrorMessage.Range;
+  protected readonly minDurationError = BookingCreateErrorMessage.MinDuration;
+  protected readonly maxDurationError = BookingCreateErrorMessage.MaxDuration;
   protected readonly pastError = BookingCreateErrorMessage.Past;
 
   protected readonly lockedRoom = this.data.rooms.find((room) => room.id === this.data.roomId);
@@ -156,14 +163,25 @@ export class BookingsCreateDialog {
       this.dialogRef.close(booking);
     } catch (error: unknown) {
       this.errorMessage.set(this.createErrorMessage(error));
+      if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.BadRequest) {
+        this.form.markAllAsTouched();
+      }
     } finally {
       this.isSubmitting.set(false);
     }
   }
 
   private createErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse && error.status === HttpStatusCode.Conflict) {
+    if (!(error instanceof HttpErrorResponse)) {
+      return BookingCreateErrorMessage.Failed;
+    }
+
+    if (error.status === HttpStatusCode.Conflict) {
       return BookingCreateErrorMessage.Overlap;
+    }
+
+    if (error.status === HttpStatusCode.BadRequest) {
+      return BookingCreateErrorMessage.Invalid;
     }
 
     return BookingCreateErrorMessage.Failed;
@@ -187,8 +205,12 @@ function bookingTimesValidator(control: AbstractControl): ValidationErrors | nul
     return { range: true };
   }
 
-  if (endsAt - startsAt < 15 * 60 * 1000) {
+  if (endsAt - startsAt < BOOKING_MIN_DURATION_MS) {
     return { minDuration: true };
+  }
+
+  if (endsAt - startsAt > BOOKING_MAX_DURATION_MS) {
+    return { maxDuration: true };
   }
 
   if (startsAt < Date.now()) {

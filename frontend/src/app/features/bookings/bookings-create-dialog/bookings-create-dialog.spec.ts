@@ -97,10 +97,59 @@ describe('BookingsCreateDialog', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain(BookingCreateErrorMessage.Range);
+    expect(fixture.nativeElement.textContent).not.toContain(BookingCreateErrorMessage.MinDuration);
     expect(fixture.nativeElement.querySelector('.bookings-create__submit').disabled).toBe(true);
 
     await fixture.componentInstance['submit']();
     http.expectNone('/api/bookings');
+    http.verify();
+  });
+
+  it('posts an 08:00 to 20:00 booking of exactly 12 hours', async () => {
+    const { fixture, http, close } = await setup();
+    const form = fixture.componentInstance['form'];
+    form.controls.roomId.setValue(createBookingRequestMock.roomId);
+    form.patchValue({ startHour: 8, startMinute: 0, endHour: 20, endMinute: 0 });
+    form.updateValueAndValidity();
+    fixture.detectChanges();
+
+    expect(form.valid).toBe(true);
+    expect(fixture.nativeElement.querySelector('.bookings-create__submit').disabled).toBe(false);
+
+    fixture.nativeElement.querySelector('.bookings-create__submit').click();
+    await fixture.whenStable();
+
+    const request = http.expectOne('/api/bookings');
+    expect(request.request.body).toEqual({
+      roomId: createBookingRequestMock.roomId,
+      startsAt: '2026-10-26T07:00:00.000Z',
+      endsAt: '2026-10-26T19:00:00.000Z',
+    });
+    request.flush(bookingAdaMock);
+    await fixture.whenStable();
+
+    expect(close).toHaveBeenCalledWith(bookingAdaMock);
+    http.verify();
+  });
+
+  it('shows an invalid message on 400', async () => {
+    const { fixture, http, close } = await setup();
+    fixture.componentInstance['form'].controls.roomId.setValue(createBookingRequestMock.roomId);
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('.bookings-create__submit').click();
+    await fixture.whenStable();
+
+    const request = http.expectOne('/api/bookings');
+    request.flush(
+      { title: 'One or more validation errors occurred.' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(BookingCreateErrorMessage.Invalid);
+    expect(close).not.toHaveBeenCalled();
     http.verify();
   });
 
