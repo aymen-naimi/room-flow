@@ -5,35 +5,6 @@
 }
 
 .bookings {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 2rem 1.25rem;
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-  }
-
-  &__intro {
-    min-width: 0;
-  }
-
-  &__title {
-    margin: 0;
-    font-size: 1.75rem;
-    font-weight: 600;
-  }
-
-  &__lead {
-    margin: 0.25rem 0 0;
-    font-size: 0.95rem;
-    color: tokens.$color-text-muted;
-  }
-
   &__actions {
     display: flex;
     align-items: center;
@@ -86,26 +57,17 @@
     color: tokens.$color-text-muted;
   }
 
-  &__status {
-    margin: 0;
-    color: tokens.$color-text-muted;
-
-    &--error {
-      color: tokens.$color-error;
-    }
-  }
-
   &__link {
     color: tokens.$color-primary;
   }
 }
 
-::ng-deep app-bookings .bookings {
+::ng-deep app-bookings {
   .fc-monarch-4os {
     background-color: tokens.$color-primary;
   }
 
-  .fc-ei.fc-TJ .fc-J6.fc-ei {	
+  .fc-ei.fc-TJ .fc-J6.fc-ei {
     border-top: 1px solid tokens.$color-border;
   }
 

@@ -7,6 +7,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
+import { Page } from '../../../core/page/page';
 import { Toast } from '../../../core/toast';
 import { Room } from '../rooms.model';
 import { RoomsService } from '../rooms.service';
@@ -16,7 +17,7 @@ export const RoomDeleteSuccessMessage = 'Salle supprimée.';
 
 @Component({
   selector: 'app-rooms-list',
-  imports: [DatePipe, RouterLink, MatButton, MatIconButton, MatIcon, MatTooltip],
+  imports: [DatePipe, Page, RouterLink, MatButton, MatIconButton, MatIcon, MatTooltip],
   templateUrl: './rooms-list.html',
   styleUrl: './rooms-list.scss',
 })

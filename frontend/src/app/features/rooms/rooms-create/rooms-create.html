@@ -1,9 +1,4 @@
-<section class="rooms-create">
-  <header class="rooms-create__header">
-    <h1 class="rooms-create__title">Ajouter une salle</h1>
-    <p class="rooms-create__subtitle">Renseigne le nom, la capacité et l'emplacement.</p>
-  </header>
-
+<app-page title="Ajouter une salle" lead="Renseigne le nom, la capacité et l'emplacement." size="narrow">
   <form class="rooms-create__form" [formGroup]="form" (ngSubmit)="onSubmit()">
     <mat-form-field appearance="outline">
       <mat-label>Nom</mat-label>
@@ -54,4 +49,4 @@
 
     <a class="rooms-create__link" routerLink="/in/rooms">Retour à la liste</a>
   </form>
-</section>
+</app-page>

@@ -23,6 +23,7 @@ import frLocale from 'fullcalendar/locales/fr';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
+import { Page } from '../../../core/page/page';
 import { Toast } from '../../../core/toast';
 import { Room } from '../../rooms/rooms.model';
 import { RoomsService } from '../../rooms/rooms.service';
@@ -49,6 +50,7 @@ export const BookingDeleteConfirm = 'Annuler la réservation';
   selector: 'app-bookings',
   imports: [
     FullCalendarModule,
+    Page,
     RouterLink,
     MatButton,
     MatFormField,

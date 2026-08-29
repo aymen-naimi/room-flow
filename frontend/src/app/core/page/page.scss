@@ -1,0 +1,60 @@
+@use 'variables' as tokens;
+
+:host {
+  display: block;
+}
+
+.page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+
+  &--wide {
+    max-width: 72rem;
+  }
+
+  &--narrow {
+    max-width: 24rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  &__intro {
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+
+  &__lead {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    color: tokens.$color-text-muted;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__status {
+    margin: 0;
+    color: tokens.$color-text-muted;
+
+    &--error {
+      color: tokens.$color-error;
+    }
+  }
+}

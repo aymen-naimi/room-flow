@@ -155,7 +155,7 @@ describe('Bookings', () => {
   it('loads room bookings after rooms and maps events by user name', async () => {
     const { fixture, http, bookingsRequest } = await setup({ roomId: roomHorizonMock.id });
 
-    expect(fixture.nativeElement.querySelector('.bookings__title').textContent).toContain(
+    expect(fixture.nativeElement.querySelector('.page__title').textContent).toContain(
       BookingsDisponibilitesTitle,
     );
     expect(fixture.nativeElement.querySelector('full-calendar')).toBeTruthy();
@@ -187,7 +187,7 @@ describe('Bookings', () => {
   it('loads the current user bookings without a room selector', async () => {
     const { fixture, http, bookingsRequest } = await setup({ mode: 'mine' });
 
-    expect(fixture.nativeElement.querySelector('.bookings__title').textContent).toContain(
+    expect(fixture.nativeElement.querySelector('.page__title').textContent).toContain(
       BookingsAgendaTitle,
     );
     expect(fixture.nativeElement.querySelector('.bookings__room')).toBeNull();

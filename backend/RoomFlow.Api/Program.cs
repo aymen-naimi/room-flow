@@ -77,12 +77,7 @@ builder.Services.AddOpenApi(options =>
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
-builder.Services.AddExceptionHandler<RoomNameAlreadyTakenExceptionHandler>();
-builder.Services.AddExceptionHandler<EmailAlreadyTakenExceptionHandler>();
-builder.Services.AddExceptionHandler<InvalidCredentialsExceptionHandler>();
-builder.Services.AddExceptionHandler<BookingOverlapExceptionHandler>();
-builder.Services.AddExceptionHandler<BookingNotOwnedExceptionHandler>();
-builder.Services.AddExceptionHandler<RoomNotFoundExceptionHandler>();
+builder.Services.AddExceptionHandler<ApplicationProblemExceptionHandler>();
 
 var app = builder.Build();
 

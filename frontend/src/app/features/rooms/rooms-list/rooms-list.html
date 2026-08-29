@@ -1,16 +1,10 @@
-<section class="rooms">
-  <header class="rooms__header">
-    <div class="rooms__intro">
-      <h1 class="rooms__title">Salles</h1>
-      <p class="rooms__lead">Gérez les salles et consultez leur planning.</p>
-    </div>
-    <a class="rooms__add" matButton="filled" routerLink="/in/rooms/new">Ajouter une salle</a>
-  </header>
+<app-page title="Salles" lead="Gérez les salles et consultez leur planning.">
+  <a pageActions class="rooms__add" matButton="filled" routerLink="/in/rooms/new">Ajouter une salle</a>
 
   @if (isLoading()) {
-    <p class="rooms__status">Chargement des salles…</p>
+    <p class="page__status">Chargement des salles…</p>
   } @else if (hasError()) {
-    <p class="rooms__status rooms__status--error">Impossible de charger les salles.</p>
+    <p class="page__status page__status--error">Impossible de charger les salles.</p>
   } @else if (hasRooms()) {
     <table class="rooms__table">
       <thead>
@@ -56,6 +50,6 @@
       </tbody>
     </table>
   } @else {
-    <p class="rooms__status">Aucune salle pour le moment.</p>
+    <p class="page__status">Aucune salle pour le moment.</p>
   }
-</section>
+</app-page>

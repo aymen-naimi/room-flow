@@ -1,0 +1,18 @@
+<section
+  class="page"
+  [class.page--wide]="size() === 'wide'"
+  [class.page--narrow]="size() === 'narrow'"
+>
+  <header class="page__header">
+    <div class="page__intro">
+      <h1 class="page__title">{{ title() }}</h1>
+      @if (lead(); as leadText) {
+        <p class="page__lead">{{ leadText }}</p>
+      }
+    </div>
+    <div class="page__actions">
+      <ng-content select="[pageActions]" />
+    </div>
+  </header>
+  <ng-content />
+</section>

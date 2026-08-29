@@ -7,6 +7,7 @@ import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { firstValueFrom } from 'rxjs';
 import { FormValidators } from '../../../core/form-validators';
+import { Page } from '../../../core/page/page';
 import { RoomsService } from '../rooms.service';
 
 export const RoomCreateErrorMessage = {
@@ -17,6 +18,7 @@ export const RoomCreateErrorMessage = {
 @Component({
   selector: 'app-rooms-create',
   imports: [
+    Page,
     ReactiveFormsModule,
     RouterLink,
     MatButton,

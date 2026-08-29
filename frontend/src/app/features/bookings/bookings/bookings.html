@@ -1,48 +1,42 @@
-<section class="bookings">
-  <header class="bookings__header">
-    <div class="bookings__intro">
-      <h1 class="bookings__title">{{ title() }}</h1>
-      <p class="bookings__lead">{{ lead() }}</p>
-    </div>
-    @if (hasRooms()) {
-      <div class="bookings__actions">
-        @if (isRoomMode()) {
-          <mat-form-field class="bookings__room" appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Salle</mat-label>
-            <mat-icon class="bookings__room-icon" matPrefix>meeting_room</mat-icon>
-            <mat-select
-              placeholder="Choisir une salle"
-              [value]="selectedRoomId()"
-              (selectionChange)="onRoomChange($event.value)"
-            >
-              @for (room of rooms(); track room.id) {
-                <mat-option [value]="room.id">{{ room.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        }
-        <span class="bookings__reserve-wrap" [matTooltip]="reserveHint()">
-          <button
-            class="bookings__reserve"
-            matButton="filled"
-            type="button"
-            [disabled]="isReserveDisabled()"
-            (click)="openReserveDialog()"
+<app-page [title]="title()" [lead]="lead()" size="wide">
+  @if (hasRooms()) {
+    <div pageActions class="bookings__actions">
+      @if (isRoomMode()) {
+        <mat-form-field class="bookings__room" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Salle</mat-label>
+          <mat-icon class="bookings__room-icon" matPrefix>meeting_room</mat-icon>
+          <mat-select
+            placeholder="Choisir une salle"
+            [value]="selectedRoomId()"
+            (selectionChange)="onRoomChange($event.value)"
           >
-            <mat-icon>event</mat-icon>
-            Réserver
-          </button>
-        </span>
-      </div>
-    }
-  </header>
+            @for (room of rooms(); track room.id) {
+              <mat-option [value]="room.id">{{ room.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      <span class="bookings__reserve-wrap" [matTooltip]="reserveHint()">
+        <button
+          class="bookings__reserve"
+          matButton="filled"
+          type="button"
+          [disabled]="isReserveDisabled()"
+          (click)="openReserveDialog()"
+        >
+          <mat-icon>event</mat-icon>
+          Réserver
+        </button>
+      </span>
+    </div>
+  }
 
   @if (isLoading()) {
-    <p class="bookings__status">Chargement du planning…</p>
+    <p class="page__status">Chargement du planning…</p>
   } @else if (hasError()) {
-    <p class="bookings__status bookings__status--error">Impossible de charger le planning.</p>
+    <p class="page__status page__status--error">Impossible de charger le planning.</p>
   } @else if (!hasRooms()) {
-    <p class="bookings__status">
+    <p class="page__status">
       Aucune salle pour le moment.
       <a class="bookings__link" routerLink="/in/rooms/new">Ajouter une salle</a>
     </p>
@@ -57,4 +51,4 @@
       <full-calendar [options]="calendarOptions" [events]="events()" />
     </div>
   }
-</section>
+</app-page>
