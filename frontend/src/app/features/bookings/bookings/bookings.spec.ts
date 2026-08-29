@@ -239,7 +239,7 @@ describe('Bookings', () => {
     http.verify();
   });
 
-  it('opens the create dialog from a calendar slot with a 30-minute end', async () => {
+  it('opens the create dialog from a calendar slot with a 15-minute end', async () => {
     const { fixture, openDialog } = await setup({ mode: 'mine', confirmed: false });
     const unselect = vi.fn();
 
@@ -255,7 +255,7 @@ describe('Bookings', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           startsAt: '2026-08-28T08:00:00.000Z',
-          endsAt: '2026-08-28T08:30:00.000Z',
+          endsAt: '2026-08-28T08:15:00.000Z',
         }),
       }),
     );

@@ -37,14 +37,14 @@ describe('booking helpers', () => {
     expect(minutesForHour(20)).toEqual([0]);
   });
 
-  it('builds a 30-minute range from a calendar slot start', () => {
+  it('builds a 15-minute range from a calendar slot start', () => {
     expect(bookingRangeFromStart(new Date('2026-08-28T08:00:00Z'))).toEqual({
       startsAt: '2026-08-28T08:00:00.000Z',
-      endsAt: '2026-08-28T08:30:00.000Z',
+      endsAt: '2026-08-28T08:15:00.000Z',
     });
   });
 
-  it('defaults a 15-minute calendar click to 30 minutes', () => {
+  it('keeps a 15-minute calendar click', () => {
     expect(
       bookingRangeFromSelection(
         new Date('2026-08-28T08:00:00Z'),
@@ -52,7 +52,7 @@ describe('booking helpers', () => {
       ),
     ).toEqual({
       startsAt: '2026-08-28T08:00:00.000Z',
-      endsAt: '2026-08-28T08:30:00.000Z',
+      endsAt: '2026-08-28T08:15:00.000Z',
     });
   });
 
