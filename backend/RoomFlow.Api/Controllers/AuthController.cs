@@ -2,9 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using RoomFlow.Api.Contracts.Auth;
 using RoomFlow.Api.Contracts.Users;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Application.Features.Auth.Commands.Login;
 using RoomFlow.Application.Features.Auth.Commands.Logout;
 using RoomFlow.Application.Features.Auth.Commands.Refresh;
@@ -18,10 +20,17 @@ namespace RoomFlow.Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly JwtOptions _jwt;
+    private readonly AuthCookieOptions _cookie;
 
-    public AuthController(ISender sender)
+    public AuthController(
+        ISender sender,
+        IOptions<JwtOptions> jwt,
+        IOptions<AuthCookieOptions> cookie)
     {
         _sender = sender;
+        _jwt = jwt.Value;
+        _cookie = cookie.Value;
     }
 
     [HttpPost("register")]
@@ -46,34 +55,46 @@ public sealed class AuthController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(new LoginCommand(request.Email, request.Password), cancellationToken);
+        SetRefreshCookie(result.RefreshToken);
         return Ok(ToResponse(result));
     }
 
     [HttpPost("refresh")]
     [EnableRateLimiting("auth")]
-    public async Task<ActionResult<LoginResponse>> Refresh(
-        [FromBody] RefreshRequest request,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<LoginResponse>> Refresh(CancellationToken cancellationToken)
     {
-        var result = await _sender.Send(new RefreshCommand(request.RefreshToken), cancellationToken);
+        if (!RefreshTokenCookie.TryRead(Request, out var refreshToken))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _sender.Send(new RefreshCommand(refreshToken), cancellationToken);
+        SetRefreshCookie(result.RefreshToken);
         return Ok(ToResponse(result));
     }
 
     [HttpPost("logout")]
     [EnableRateLimiting("auth")]
-    public async Task<IActionResult> Logout(
-        [FromBody] LogoutRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
     {
-        await _sender.Send(new LogoutCommand(request.RefreshToken), cancellationToken);
+        if (RefreshTokenCookie.TryRead(Request, out var refreshToken))
+        {
+            await _sender.Send(new LogoutCommand(refreshToken), cancellationToken);
+        }
+
+        RefreshTokenCookie.Clear(Response, _cookie);
         return NoContent();
     }
 
+    private void SetRefreshCookie(string refreshToken)
+        => RefreshTokenCookie.Set(
+            Response,
+            refreshToken,
+            TimeSpan.FromHours(_jwt.RefreshTokenExpirationHours),
+            _cookie);
+
     private static LoginResponse ToResponse(LoginResult result)
-        => new(
-            result.AccessToken,
-            result.RefreshToken,
-            ToUserResponse(result.User));
+        => new(result.AccessToken, ToUserResponse(result.User));
 
     private static UserResponse ToUserResponse(UserDto user)
         => new(user.Id, user.Email, user.FirstName, user.LastName, user.Role.ToString());

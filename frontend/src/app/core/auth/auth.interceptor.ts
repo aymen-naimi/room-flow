@@ -19,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(request).pipe(
     catchError((error: unknown) => {
-      if (!shouldRefresh(error, request, auth.refreshToken())) {
+      if (!shouldRefresh(error, request, auth.isAuthenticated())) {
         return throwError(() => error);
       }
 
@@ -44,14 +44,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 function shouldRefresh(
   error: unknown,
   request: HttpRequest<unknown>,
-  refreshToken: string | null,
+  isAuthenticated: boolean,
 ): boolean {
   return (
     error instanceof HttpErrorResponse &&
     error.status === HttpStatusCode.Unauthorized &&
     !isAnonymousAuthUrl(request.url) &&
     !request.context.get(AUTH_RETRY) &&
-    refreshToken !== null
+    isAuthenticated
   );
 }
 
@@ -59,11 +59,13 @@ function withAccessToken(
   req: HttpRequest<unknown>,
   accessToken: string | null,
 ): HttpRequest<unknown> {
+  const withCredentials = { withCredentials: true as const };
   if (!accessToken || isAnonymousAuthUrl(req.url)) {
-    return req;
+    return req.clone(withCredentials);
   }
 
   return req.clone({
+    ...withCredentials,
     setHeaders: { Authorization: `Bearer ${accessToken}` },
   });
 }

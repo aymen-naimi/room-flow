@@ -36,6 +36,8 @@ services:
       Jwt__RefreshTokenExpirationHours: "24"
       Cors__AllowedOrigins__0: http://localhost:8080
       Cors__AllowedOrigins__1: http://localhost:4200
+      AuthCookie__Secure: "false"
+      AuthCookie__SameSite: Lax
     depends_on:
       sqlserver:
         condition: service_healthy

@@ -14,7 +14,7 @@ describe('auth guards', () => {
   async function setup(session: typeof loginResponseMock | null = loginResponseMock): Promise<void> {
     sessionStorage.clear();
     if (session) {
-      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ user: session.user }));
     }
 
     await TestBed.configureTestingModule({

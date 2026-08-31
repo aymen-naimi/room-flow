@@ -37,7 +37,7 @@ describe('RoomsList', () => {
     const toast = { error: vi.fn(), success: vi.fn() };
     const openDialog = vi.fn(() => ({ afterClosed: () => of(confirmed) }));
     const session = role === 'Admin' ? adminLoginResponseMock : loginResponseMock;
-    sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+    sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ user: session.user }));
 
     await TestBed.configureTestingModule({
       imports: [RoomsList],

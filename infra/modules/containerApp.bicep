@@ -116,6 +116,14 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'Cors__AllowedOrigins__0'
               value: corsOrigin
             }
+            {
+              name: 'AuthCookie__Secure'
+              value: 'true'
+            }
+            {
+              name: 'AuthCookie__SameSite'
+              value: 'None'
+            }
           ]
           probes: [
             {

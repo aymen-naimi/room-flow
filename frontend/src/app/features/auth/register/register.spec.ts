@@ -53,7 +53,8 @@ describe('Register', () => {
     http.expectOne('/api/auth/login').flush(loginResponseMock);
     await fixture.whenStable();
 
-    expect(sessionStorage.getItem('room-flow.session')).toContain(loginResponseMock.refreshToken);
+    expect(sessionStorage.getItem('room-flow.session')).toContain(loginResponseMock.user.email);
+    expect(sessionStorage.getItem('room-flow.session')).not.toContain(loginResponseMock.accessToken);
     http.verify();
   });
 

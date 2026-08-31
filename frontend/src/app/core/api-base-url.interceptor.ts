@@ -12,5 +12,5 @@ export function withApiBaseUrl(url: string, baseUrl: string): string {
 
 export const apiBaseUrlInterceptor: HttpInterceptorFn = (req, next) => {
   const url = withApiBaseUrl(req.url, environment.apiBaseUrl);
-  return next(url === req.url ? req : req.clone({ url }));
+  return next(req.clone({ url, withCredentials: true }));
 };

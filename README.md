@@ -18,7 +18,7 @@ Then sign out and sign in again so the new role is in the JWT.
 
 ## Features
 
-- Register and login with JWT (access token + refresh token)
+- Register and login with JWT (short-lived access token; refresh token in an HttpOnly cookie)
 - Personal agenda (week calendar) and per-room availability
 - Create and cancel bookings (overlap checks, 15-minute slots, 08:00–20:00)
 - Room list; only **Admin** can add or delete rooms
