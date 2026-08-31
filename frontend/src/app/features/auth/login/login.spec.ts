@@ -51,7 +51,8 @@ describe('Login', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(sessionStorage.getItem('room-flow.session')).toContain(loginResponseMock.accessToken);
+    expect(sessionStorage.getItem('room-flow.session')).toContain(loginResponseMock.user.email);
+    expect(sessionStorage.getItem('room-flow.session')).not.toContain(loginResponseMock.accessToken);
     http.verify();
   });
 

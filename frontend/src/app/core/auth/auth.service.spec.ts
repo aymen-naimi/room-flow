@@ -21,7 +21,7 @@ describe('AuthService', () => {
     };
   }
 
-  it('stores the session after login', async () => {
+  it('stores the user after login without putting tokens in sessionStorage', async () => {
     const { auth, http } = await setup();
 
     auth.login({ email: 'jane.doe@example.com', password: 'password1' }).subscribe();
@@ -31,7 +31,8 @@ describe('AuthService', () => {
     expect(auth.isAdmin()).toBe(false);
     expect(auth.accessToken()).toBe(loginResponseMock.accessToken);
     expect(auth.currentUser()?.email).toBe(loginResponseMock.user.email);
-    expect(sessionStorage.getItem(AUTH_SESSION_KEY)).toContain(loginResponseMock.refreshToken);
+    expect(sessionStorage.getItem(AUTH_SESSION_KEY)).toContain(loginResponseMock.user.email);
+    expect(sessionStorage.getItem(AUTH_SESSION_KEY)).not.toContain(loginResponseMock.accessToken);
     http.verify();
   });
 
@@ -54,7 +55,7 @@ describe('AuthService', () => {
     http.verify();
   });
 
-  it('rotates tokens on refresh', async () => {
+  it('rotates the access token on refresh', async () => {
     const { auth, http } = await setup();
 
     auth.login({ email: 'jane.doe@example.com', password: 'password1' }).subscribe();
@@ -63,13 +64,13 @@ describe('AuthService', () => {
     const rotated = {
       ...loginResponseMock,
       accessToken: 'access-2',
-      refreshToken: 'refresh-2',
     };
     auth.refresh().subscribe();
-    http.expectOne('/api/auth/refresh').flush(rotated);
+    const refresh = http.expectOne('/api/auth/refresh');
+    expect(refresh.request.body).toEqual({});
+    refresh.flush(rotated);
 
     expect(auth.accessToken()).toBe('access-2');
-    expect(auth.refreshToken()).toBe('refresh-2');
     http.verify();
   });
 

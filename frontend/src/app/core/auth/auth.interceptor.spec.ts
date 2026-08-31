@@ -46,6 +46,7 @@ describe('authInterceptor', () => {
     expect(req.request.headers.get('Authorization')).toBe(
       `Bearer ${loginResponseMock.accessToken}`,
     );
+    expect(req.request.withCredentials).toBe(true);
     req.flush([]);
     http.verify();
   });
@@ -54,7 +55,7 @@ describe('authInterceptor', () => {
     const { httpClient, http, auth } = await setup();
     await login(auth, http);
 
-    httpClient.post('/api/auth/refresh', { refreshToken: 'refresh-token' }).subscribe();
+    httpClient.post('/api/auth/refresh', {}).subscribe();
     const req = http.expectOne('/api/auth/refresh');
     expect(req.request.headers.has('Authorization')).toBe(false);
     req.flush(loginResponseMock);
@@ -74,7 +75,6 @@ describe('authInterceptor', () => {
     http.expectOne('/api/auth/refresh').flush({
       ...loginResponseMock,
       accessToken: 'access-2',
-      refreshToken: 'refresh-2',
     });
 
     const retry = http.expectOne('/api/rooms');
@@ -100,7 +100,6 @@ describe('authInterceptor', () => {
     refreshCalls[0].flush({
       ...loginResponseMock,
       accessToken: 'access-2',
-      refreshToken: 'refresh-2',
     });
 
     http.expectOne('/api/rooms/a').flush({ id: 'a' });
@@ -113,7 +112,7 @@ describe('authInterceptor', () => {
     await login(auth, http);
 
     let failed = false;
-    httpClient.post('/api/auth/refresh', { refreshToken: 'refresh-token' }).subscribe({
+    httpClient.post('/api/auth/refresh', {}).subscribe({
       error: () => {
         failed = true;
       },

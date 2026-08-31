@@ -48,12 +48,16 @@ if (allowedOrigins is null || allowedOrigins.Length == 0)
     allowedOrigins = ["http://localhost:4200"];
 }
 
+builder.Services.Configure<AuthCookieOptions>(
+    builder.Configuration.GetSection(AuthCookieOptions.SectionName));
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod());
+            .AllowAnyMethod()
+            .AllowCredentials());
 });
 builder.Services.AddRateLimiter(options =>
 {
