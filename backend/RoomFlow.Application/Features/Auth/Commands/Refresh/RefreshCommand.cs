@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Application.Exceptions;
@@ -13,15 +14,18 @@ public sealed class RefreshCommandHandler : IRequestHandler<RefreshCommand, Logi
     private readonly IRefreshTokenFactory _refreshTokenFactory;
     private readonly IRefreshTokenStore _refreshTokenStore;
     private readonly IAccessTokenGenerator _accessTokenGenerator;
+    private readonly ILogger<RefreshCommandHandler> _logger;
 
     public RefreshCommandHandler(
         IRefreshTokenFactory refreshTokenFactory,
         IRefreshTokenStore refreshTokenStore,
-        IAccessTokenGenerator accessTokenGenerator)
+        IAccessTokenGenerator accessTokenGenerator,
+        ILogger<RefreshCommandHandler> logger)
     {
         _refreshTokenFactory = refreshTokenFactory;
         _refreshTokenStore = refreshTokenStore;
         _accessTokenGenerator = accessTokenGenerator;
+        _logger = logger;
     }
 
     public async Task<LoginResult> Handle(RefreshCommand request, CancellationToken cancellationToken)
@@ -30,10 +34,12 @@ public sealed class RefreshCommandHandler : IRequestHandler<RefreshCommand, Logi
         var existing = await _refreshTokenStore.GetActiveByHashAsync(hash, cancellationToken);
         if (existing is null)
         {
+            _logger.LogWarning("Refresh token rejected because it is unknown or already revoked");
             throw new InvalidCredentialsException();
         }
 
         await _refreshTokenStore.RevokeAsync(existing, cancellationToken);
+        _logger.LogInformation("Refresh token rotated for email {Email}", existing.User.Email);
         return await LoginCommandHandler.IssueSessionAsync(
             existing.User,
             _accessTokenGenerator,

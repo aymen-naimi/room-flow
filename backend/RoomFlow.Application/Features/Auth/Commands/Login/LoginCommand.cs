@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Application.Exceptions;
@@ -20,6 +21,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
     private readonly IAccessTokenGenerator _accessTokenGenerator;
     private readonly IRefreshTokenFactory _refreshTokenFactory;
     private readonly IRefreshTokenStore _refreshTokenStore;
+    private readonly ILogger<LoginCommandHandler> _logger;
 
     public LoginCommandHandler(
         IUserReadStore readStore,
@@ -27,7 +29,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         IPasswordHasher passwordHasher,
         IAccessTokenGenerator accessTokenGenerator,
         IRefreshTokenFactory refreshTokenFactory,
-        IRefreshTokenStore refreshTokenStore)
+        IRefreshTokenStore refreshTokenStore,
+        ILogger<LoginCommandHandler> logger)
     {
         _readStore = readStore;
         _writeStore = writeStore;
@@ -35,6 +38,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         _accessTokenGenerator = accessTokenGenerator;
         _refreshTokenFactory = refreshTokenFactory;
         _refreshTokenStore = refreshTokenStore;
+        _logger = logger;
     }
 
     public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -46,6 +50,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
 
         if (user is null || !passwordMatches)
         {
+            _logger.LogWarning("Login rejected for email {Email}", email);
             throw new InvalidCredentialsException();
         }
 
@@ -53,6 +58,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         await _writeStore.UpdateLastSignInAsync(user.Id, lastSignIn, cancellationToken);
         user.LastSignIn = lastSignIn;
 
+        _logger.LogInformation("Login succeeded for email {Email}", email);
         return await IssueSessionAsync(user, cancellationToken);
     }
 

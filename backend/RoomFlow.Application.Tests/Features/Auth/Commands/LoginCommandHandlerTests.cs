@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Auth.Commands.Login;
 using RoomFlow.Application.Tests.Fakes;
@@ -23,7 +24,8 @@ public sealed class LoginCommandHandlerTests
             new FakePasswordHasher(),
             new FakeAccessTokenGenerator(),
             new FakeRefreshTokenFactory(),
-            refreshStore);
+            refreshStore,
+            NullLogger<LoginCommandHandler>.Instance);
 
         var result = await handler.Handle(new LoginCommand("Ada@Example.com", "password1"), CancellationToken.None);
 
@@ -50,7 +52,8 @@ public sealed class LoginCommandHandlerTests
             new FakePasswordHasher(),
             new FakeAccessTokenGenerator(),
             new FakeRefreshTokenFactory(),
-            new FakeRefreshTokenStore());
+            new FakeRefreshTokenStore(),
+            NullLogger<LoginCommandHandler>.Instance);
 
         await Assert.ThrowsAsync<InvalidCredentialsException>(
             () => handler.Handle(new LoginCommand("ada@example.com", "wrong"), CancellationToken.None));
@@ -66,7 +69,8 @@ public sealed class LoginCommandHandlerTests
             new FakePasswordHasher(),
             new FakeAccessTokenGenerator(),
             new FakeRefreshTokenFactory(),
-            new FakeRefreshTokenStore());
+            new FakeRefreshTokenStore(),
+            NullLogger<LoginCommandHandler>.Instance);
 
         await Assert.ThrowsAsync<InvalidCredentialsException>(
             () => handler.Handle(new LoginCommand("nobody@example.com", "password1"), CancellationToken.None));

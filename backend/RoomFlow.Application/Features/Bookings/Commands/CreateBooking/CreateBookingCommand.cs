@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using RoomFlow.Application.Abstractions.Concurrency;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Exceptions;
@@ -16,19 +17,22 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
     private readonly IUserReadStore _userReadStore;
     private readonly IBookingReadStore _bookingReadStore;
     private readonly IBookingWriteStore _bookingWriteStore;
+    private readonly ILogger<CreateBookingCommandHandler> _logger;
 
     public CreateBookingCommandHandler(
         IRoomBookingLock roomLock,
         IRoomReadStore roomReadStore,
         IUserReadStore userReadStore,
         IBookingReadStore bookingReadStore,
-        IBookingWriteStore bookingWriteStore)
+        IBookingWriteStore bookingWriteStore,
+        ILogger<CreateBookingCommandHandler> logger)
     {
         _roomLock = roomLock;
         _roomReadStore = roomReadStore;
         _userReadStore = userReadStore;
         _bookingReadStore = bookingReadStore;
         _bookingWriteStore = bookingWriteStore;
+        _logger = logger;
     }
 
     public async Task<BookingDto> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
@@ -38,12 +42,17 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
             var room = await _roomReadStore.GetRoomByIdAsync(request.RoomId, cancellationToken);
             if (room is null)
             {
+                _logger.LogWarning(
+                    "Booking creation rejected because room {RoomId} was not found",
+                    request.RoomId);
                 throw new RoomNotFoundException(request.RoomId);
             }
 
             var user = await _userReadStore.GetByIdAsync(request.UserId, cancellationToken);
             if (user is null)
             {
+                _logger.LogError(
+                    "Booking creation failed because the authenticated user was not found");
                 throw new InvalidOperationException($"User '{request.UserId}' was not found.");
             }
 
@@ -52,6 +61,9 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
 
             if (await _bookingReadStore.HasOverlapAsync(request.RoomId, startsAt, endsAt, cancellationToken))
             {
+                _logger.LogWarning(
+                    "Booking creation rejected because room {RoomId} has an overlapping slot",
+                    request.RoomId);
                 throw new BookingOverlapException(request.RoomId);
             }
 
@@ -68,6 +80,11 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
             };
 
             await _bookingWriteStore.AddAsync(booking, cancellationToken);
+
+            _logger.LogInformation(
+                "Booking created {BookingId} for room {RoomId}",
+                booking.Id,
+                room.Id);
 
             return new BookingDto(
                 booking.Id,

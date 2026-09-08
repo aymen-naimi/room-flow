@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Auth.Commands.Login;
 using RoomFlow.Application.Features.Auth.Commands.Refresh;
@@ -32,7 +33,11 @@ public sealed class RefreshCommandHandlerTests
             ExpiresAt = issued.ExpiresAt,
             User = user
         });
-        var handler = new RefreshCommandHandler(factory, store, new FakeAccessTokenGenerator());
+        var handler = new RefreshCommandHandler(
+            factory,
+            store,
+            new FakeAccessTokenGenerator(),
+            NullLogger<RefreshCommandHandler>.Instance);
 
         var result = await handler.Handle(new RefreshCommand(issued.Raw), CancellationToken.None);
 
@@ -51,7 +56,8 @@ public sealed class RefreshCommandHandlerTests
         var handler = new RefreshCommandHandler(
             new FakeRefreshTokenFactory(),
             new FakeRefreshTokenStore(),
-            new FakeAccessTokenGenerator());
+            new FakeAccessTokenGenerator(),
+            NullLogger<RefreshCommandHandler>.Instance);
 
         await Assert.ThrowsAsync<InvalidCredentialsException>(
             () => handler.Handle(new RefreshCommand("nope"), CancellationToken.None));
