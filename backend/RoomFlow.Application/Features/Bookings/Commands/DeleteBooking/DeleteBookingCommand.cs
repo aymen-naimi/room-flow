@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Exceptions;
 
@@ -10,11 +11,16 @@ public sealed class DeleteBookingCommandHandler : IRequestHandler<DeleteBookingC
 {
     private readonly IBookingReadStore _readStore;
     private readonly IBookingWriteStore _writeStore;
+    private readonly ILogger<DeleteBookingCommandHandler> _logger;
 
-    public DeleteBookingCommandHandler(IBookingReadStore readStore, IBookingWriteStore writeStore)
+    public DeleteBookingCommandHandler(
+        IBookingReadStore readStore,
+        IBookingWriteStore writeStore,
+        ILogger<DeleteBookingCommandHandler> logger)
     {
         _readStore = readStore;
         _writeStore = writeStore;
+        _logger = logger;
     }
 
     public async Task<bool> Handle(DeleteBookingCommand request, CancellationToken cancellationToken)
@@ -22,14 +28,26 @@ public sealed class DeleteBookingCommandHandler : IRequestHandler<DeleteBookingC
         var booking = await _readStore.GetByIdAsync(request.Id, cancellationToken);
         if (booking is null)
         {
+            _logger.LogWarning(
+                "Booking deletion skipped because booking {BookingId} was not found",
+                request.Id);
             return false;
         }
 
         if (booking.UserId != request.UserId)
         {
+            _logger.LogWarning(
+                "Booking deletion rejected because booking {BookingId} belongs to another user",
+                request.Id);
             throw new BookingNotOwnedException(request.Id);
         }
 
-        return await _writeStore.RemoveAsync(request.Id, cancellationToken);
+        var deleted = await _writeStore.RemoveAsync(request.Id, cancellationToken);
+        if (deleted)
+        {
+            _logger.LogInformation("Booking deleted {BookingId}", request.Id);
+        }
+
+        return deleted;
     }
 }

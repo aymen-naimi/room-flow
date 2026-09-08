@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Rooms.Commands.CreateRoom;
 using RoomFlow.Application.Tests.Fakes;
@@ -10,7 +11,7 @@ public sealed class CreateRoomCommandHandlerTests
     public async Task Handle_adds_room_when_name_is_available()
     {
         var store = new FakeRoomWriteStore();
-        var handler = new CreateRoomCommandHandler(store);
+        var handler = new CreateRoomCommandHandler(store, NullLogger<CreateRoomCommandHandler>.Instance);
         var createdByUserId = Guid.NewGuid();
         var command = new CreateRoomCommand("Salle A", 8, "1er étage", createdByUserId);
 
@@ -31,10 +32,10 @@ public sealed class CreateRoomCommandHandlerTests
     {
         var store = new FakeRoomWriteStore();
         var createdByUserId = Guid.NewGuid();
-        await new CreateRoomCommandHandler(store).Handle(
+        await new CreateRoomCommandHandler(store, NullLogger<CreateRoomCommandHandler>.Instance).Handle(
             new CreateRoomCommand("Salle A", 8, "RDC", createdByUserId),
             CancellationToken.None);
-        var handler = new CreateRoomCommandHandler(store);
+        var handler = new CreateRoomCommandHandler(store, NullLogger<CreateRoomCommandHandler>.Instance);
 
         var exception = await Assert.ThrowsAsync<RoomNameAlreadyTakenException>(
             () => handler.Handle(

@@ -10,9 +10,14 @@ using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Api;
 using RoomFlow.Infrastructure;
 using RoomFlow.Infrastructure.Persistence;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services
+    .AddOpenTelemetry()
+    .UseAzureMonitor();
+    
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();

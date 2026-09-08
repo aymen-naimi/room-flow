@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Concurrency;
 using RoomFlow.Application.Exceptions;
@@ -179,7 +180,8 @@ public sealed class CreateBookingCommandHandlerTests
             rooms,
             users,
             bookings,
-            bookings);
+            bookings,
+            NullLogger<CreateBookingCommandHandler>.Instance);
 
         return new Fixture(handler, bookings, rooms, user, room);
     }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Features.Rooms.Queries.GetRoomById;
 using RoomFlow.Application.Features.Rooms.Queries.GetRooms;
@@ -13,7 +14,7 @@ public sealed class GetRoomsQueryHandlerTests
         var store = new FakeRoomReadStore();
         var room = new RoomDto(Guid.NewGuid(), "Salle A", 8, "RDC", DateTimeOffset.UtcNow);
         store.Rooms.Add(room);
-        var handler = new GetRoomsQueryHandler(store);
+        var handler = new GetRoomsQueryHandler(store, NullLogger<GetRoomsQueryHandler>.Instance);
 
         var result = await handler.Handle(new GetRoomsQuery(), CancellationToken.None);
 

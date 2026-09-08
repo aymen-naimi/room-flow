@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Features.Rooms.Commands.DeleteRoom;
 using RoomFlow.Application.Tests.Fakes;
 using RoomFlow.Domain.Entities;
@@ -20,7 +21,7 @@ public sealed class DeleteRoomCommandHandlerTests
             CreatedByUserId = Guid.NewGuid()
         };
         await store.AddAsync(room);
-        var handler = new DeleteRoomCommandHandler(store);
+        var handler = new DeleteRoomCommandHandler(store, NullLogger<DeleteRoomCommandHandler>.Instance);
 
         var deleted = await handler.Handle(new DeleteRoomCommand(room.Id), CancellationToken.None);
 
@@ -31,7 +32,9 @@ public sealed class DeleteRoomCommandHandlerTests
     [Fact]
     public async Task Handle_returns_false_when_room_is_missing()
     {
-        var handler = new DeleteRoomCommandHandler(new FakeRoomWriteStore());
+        var handler = new DeleteRoomCommandHandler(
+            new FakeRoomWriteStore(),
+            NullLogger<DeleteRoomCommandHandler>.Instance);
 
         var deleted = await handler.Handle(new DeleteRoomCommand(Guid.NewGuid()), CancellationToken.None);
 

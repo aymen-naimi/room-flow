@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Bookings.Commands.DeleteBooking;
@@ -11,7 +12,7 @@ public sealed class DeleteBookingCommandHandlerTests
     public async Task Handle_returns_false_when_booking_is_missing()
     {
         var store = new FakeBookingStore();
-        var handler = new DeleteBookingCommandHandler(store, store);
+        var handler = new DeleteBookingCommandHandler(store, store, NullLogger<DeleteBookingCommandHandler>.Instance);
 
         var deleted = await handler.Handle(
             new DeleteBookingCommand(Guid.NewGuid(), Guid.NewGuid()),
@@ -26,7 +27,7 @@ public sealed class DeleteBookingCommandHandlerTests
         var store = new FakeBookingStore();
         var ownerId = Guid.NewGuid();
         var booking = Seed(store, ownerId);
-        var handler = new DeleteBookingCommandHandler(store, store);
+        var handler = new DeleteBookingCommandHandler(store, store, NullLogger<DeleteBookingCommandHandler>.Instance);
 
         await Assert.ThrowsAsync<BookingNotOwnedException>(
             () => handler.Handle(new DeleteBookingCommand(booking.Id, Guid.NewGuid()), CancellationToken.None));
@@ -39,7 +40,7 @@ public sealed class DeleteBookingCommandHandlerTests
         var store = new FakeBookingStore();
         var ownerId = Guid.NewGuid();
         var booking = Seed(store, ownerId);
-        var handler = new DeleteBookingCommandHandler(store, store);
+        var handler = new DeleteBookingCommandHandler(store, store, NullLogger<DeleteBookingCommandHandler>.Instance);
 
         var deleted = await handler.Handle(new DeleteBookingCommand(booking.Id, ownerId), CancellationToken.None);
 

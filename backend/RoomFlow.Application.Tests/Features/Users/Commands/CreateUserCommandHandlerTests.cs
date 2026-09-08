@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Users.Commands.CreateUser;
 using RoomFlow.Application.Tests.Fakes;
@@ -11,7 +12,10 @@ public sealed class CreateUserCommandHandlerTests
     public async Task Handle_adds_user_when_email_is_available()
     {
         var store = new FakeUserWriteStore();
-        var handler = new CreateUserCommandHandler(store, new FakePasswordHasher());
+        var handler = new CreateUserCommandHandler(
+            store,
+            new FakePasswordHasher(),
+            NullLogger<CreateUserCommandHandler>.Instance);
         var command = new CreateUserCommand("Ada@Example.com", "password1", "Ada", "Lovelace");
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -34,10 +38,10 @@ public sealed class CreateUserCommandHandlerTests
     {
         var store = new FakeUserWriteStore();
         var hasher = new FakePasswordHasher();
-        await new CreateUserCommandHandler(store, hasher).Handle(
+        await new CreateUserCommandHandler(store, hasher, NullLogger<CreateUserCommandHandler>.Instance).Handle(
             new CreateUserCommand("ada@example.com", "password1", "Ada", "Lovelace"),
             CancellationToken.None);
-        var handler = new CreateUserCommandHandler(store, hasher);
+        var handler = new CreateUserCommandHandler(store, hasher, NullLogger<CreateUserCommandHandler>.Instance);
 
         var exception = await Assert.ThrowsAsync<EmailAlreadyTakenException>(
             () => handler.Handle(

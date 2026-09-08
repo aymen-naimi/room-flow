@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.Logging;
 using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Abstractions.Security;
 using RoomFlow.Application.Exceptions;
@@ -14,11 +15,16 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 {
     private readonly IUserWriteStore _writeStore;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ILogger<CreateUserCommandHandler> _logger;
 
-    public CreateUserCommandHandler(IUserWriteStore writeStore, IPasswordHasher passwordHasher)
+    public CreateUserCommandHandler(
+        IUserWriteStore writeStore,
+        IPasswordHasher passwordHasher,
+        ILogger<CreateUserCommandHandler> logger)
     {
         _writeStore = writeStore;
         _passwordHasher = passwordHasher;
+        _logger = logger;
     }
 
     public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -27,6 +33,9 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 
         if (await _writeStore.ExistsWithEmailAsync(email, cancellationToken))
         {
+            _logger.LogWarning(
+                "User creation rejected because email {Email} is already taken",
+                email);
             throw new EmailAlreadyTakenException(email);
         }
 
@@ -42,6 +51,8 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         };
 
         await _writeStore.AddAsync(user, cancellationToken);
+
+        _logger.LogInformation("User created {UserId} with email {Email}", user.Id, user.Email);
 
         return new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.Role);
     }
