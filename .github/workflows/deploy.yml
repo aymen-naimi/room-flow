@@ -151,7 +151,7 @@ jobs:
           SQL_FQDN: ${{ steps.platform.outputs.sqlFqdn }}
           SQL_DATABASE: ${{ steps.platform.outputs.sqlDatabaseName }}
           IDENTITY_NAME: ${{ steps.platform.outputs.identityName }}
-          IDENTITY_PRINCIPAL_ID: ${{ steps.platform.outputs.identityPrincipalId }}
+          IDENTITY_CLIENT_ID: ${{ steps.platform.outputs.identityClientId }}
         run: |
           set -euo pipefail
 
@@ -160,12 +160,12 @@ jobs:
             exit 1
           fi
 
-          if [[ ! "$IDENTITY_PRINCIPAL_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
-            echo "Unexpected managed identity object ID: $IDENTITY_PRINCIPAL_ID"
+          if [[ ! "$IDENTITY_CLIENT_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            echo "Unexpected managed identity client ID: $IDENTITY_CLIENT_ID"
             exit 1
           fi
 
-          IDENTITY_SID=$(python3 -c "import uuid,sys; print('0x'+uuid.UUID(sys.argv[1]).bytes_le.hex())" "$IDENTITY_PRINCIPAL_ID")
+          IDENTITY_SID=$(python3 -c "import uuid,sys; print('0x'+uuid.UUID(sys.argv[1]).bytes_le.hex())" "$IDENTITY_CLIENT_ID")
           if [[ ! "$IDENTITY_SID" =~ ^0x[0-9a-f]{32}$ ]]; then
             echo "Unexpected SID for managed identity: $IDENTITY_SID"
             exit 1
@@ -189,8 +189,21 @@ jobs:
           sudo mv sqlcmd /usr/local/bin/sqlcmd
           rm -f sqlcmd.tar.bz2
 
-          SQL="IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'${IDENTITY_NAME}')
-            CREATE USER [${IDENTITY_NAME}] WITH SID = ${IDENTITY_SID}, TYPE = E;
+          SQL="
+            DECLARE @expectedSid varbinary(85) = ${IDENTITY_SID};
+            DECLARE @dup sysname;
+            SELECT @dup = name
+            FROM sys.database_principals
+            WHERE sid = @expectedSid AND name <> N'${IDENTITY_NAME}';
+            IF @dup IS NOT NULL
+              EXEC(N'DROP USER ' + QUOTENAME(@dup));
+            IF EXISTS (
+              SELECT 1 FROM sys.database_principals
+              WHERE name = N'${IDENTITY_NAME}' AND sid <> @expectedSid
+            )
+              DROP USER [${IDENTITY_NAME}];
+            IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'${IDENTITY_NAME}')
+              CREATE USER [${IDENTITY_NAME}] WITH SID = ${IDENTITY_SID}, TYPE = E;
             IF NOT EXISTS (
               SELECT 1
               FROM sys.database_role_members drm
@@ -198,7 +211,7 @@ jobs:
               INNER JOIN sys.database_principals m ON drm.member_principal_id = m.principal_id
               WHERE r.name = N'db_owner' AND m.name = N'${IDENTITY_NAME}'
             )
-            ALTER ROLE db_owner ADD MEMBER [${IDENTITY_NAME}];"
+              ALTER ROLE db_owner ADD MEMBER [${IDENTITY_NAME}];"
 
           for i in 1 2 3 4 5 6 7 8; do
             if sqlcmd -S "$SQL_FQDN" -d "$SQL_DATABASE" --authentication-method ActiveDirectoryAzCli -b -Q "$SQL"; then
