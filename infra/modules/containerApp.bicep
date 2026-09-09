@@ -16,13 +16,8 @@ param identityId string
 @description('Full image reference including tag')
 param apiImage string
 
-@description('JWT signing key (>= 32 bytes)')
-@secure()
-param jwtSigningKey string
-
-@description('SQL connection string')
-@secure()
-param sqlConnectionString string
+@description('Key Vault URI (trailing slash), e.g. https://myvault.vault.azure.net/')
+param keyVaultUri string
 
 @description('Allowed CORS origin (Static Web App HTTPS origin)')
 param corsOrigin string
@@ -58,11 +53,13 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         {
           name: 'jwt-signing-key'
-          value: jwtSigningKey
+          keyVaultUrl: uri(keyVaultUri, 'secrets/jwt-signing-key')
+          identity: identityId
         }
         {
           name: 'sql-connection'
-          value: sqlConnectionString
+          keyVaultUrl: uri(keyVaultUri, 'secrets/sql-connection')
+          identity: identityId
         }
         {
           name: 'appinsights-connection'

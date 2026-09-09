@@ -60,7 +60,22 @@ jobs:
         id: platform
         env:
           SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_PRINCIPAL_ID: ${{ secrets.AZURE_PRINCIPAL_ID }}
         run: |
+          set -euo pipefail
+
+          if [ -n "${AZURE_PRINCIPAL_ID}" ]; then
+            DEPLOYER_PRINCIPAL_ID="$AZURE_PRINCIPAL_ID"
+          else
+            DEPLOYER_PRINCIPAL_ID=$(az ad sp show --id "$AZURE_CLIENT_ID" --query id -o tsv)
+          fi
+
+          if [ -z "$DEPLOYER_PRINCIPAL_ID" ]; then
+            echo "Missing Azure principal object ID. Set GitHub secret AZURE_PRINCIPAL_ID (az ad sp show --id <AZURE_CLIENT_ID> --query id -o tsv)."
+            exit 1
+          fi
+
           az deployment group create \
             --name platform \
             --resource-group "$AZURE_RESOURCE_GROUP" \
@@ -69,6 +84,7 @@ jobs:
               location="$AZURE_LOCATION" \
               prefix="$PREFIX" \
               sqlAdminPassword="$SQL_ADMIN_PASSWORD" \
+              deployerPrincipalId="$DEPLOYER_PRINCIPAL_ID" \
             --query properties.outputs -o json > platform-outputs.json
 
           {
@@ -82,7 +98,42 @@ jobs:
             echo "swaName=$(jq -r '.swaName.value' platform-outputs.json)"
             echo "swaHostname=$(jq -r '.swaHostname.value' platform-outputs.json)"
             echo "appInsightsName=$(jq -r '.appInsightsName.value' platform-outputs.json)"
+            echo "keyVaultName=$(jq -r '.keyVaultName.value' platform-outputs.json)"
+            echo "keyVaultUri=$(jq -r '.keyVaultUri.value' platform-outputs.json)"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Seed Key Vault secrets
+        env:
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
+          SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
+          KV_NAME: ${{ steps.platform.outputs.keyVaultName }}
+          SQL_FQDN: ${{ steps.platform.outputs.sqlFqdn }}
+          SQL_DATABASE: ${{ steps.platform.outputs.sqlDatabaseName }}
+          SQL_LOGIN: ${{ steps.platform.outputs.sqlAdminLogin }}
+        run: |
+          set -euo pipefail
+
+          SQL_CONNECTION_STRING="Server=tcp:${SQL_FQDN},1433;Initial Catalog=${SQL_DATABASE};User ID=${SQL_LOGIN};Password=${SQL_ADMIN_PASSWORD};Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=true;Connection Timeout=30;"
+          echo "::add-mask::$SQL_CONNECTION_STRING"
+
+          set_secret() {
+            local name="$1"
+            local value="$2"
+            local i
+            for i in 1 2 3 4 5 6 7 8; do
+              if az keyvault secret set --vault-name "$KV_NAME" --name "$name" --value "$value" --output none; then
+                return 0
+              fi
+              echo "Key Vault RBAC not ready yet (attempt $i), retrying in 15s..."
+              sleep 15
+            done
+            echo "Failed to set secret $name"
+            return 1
+          }
+
+          set_secret jwt-signing-key "$JWT_SIGNING_KEY"
+          set_secret sql-admin-password "$SQL_ADMIN_PASSWORD"
+          set_secret sql-connection "$SQL_CONNECTION_STRING"
 
       - name: Login to ACR
         run: az acr login --name "${{ steps.platform.outputs.acrName }}"
@@ -98,9 +149,6 @@ jobs:
 
       - name: Deploy API
         id: api
-        env:
-          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
-          SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
         run: |
           az deployment group create \
             --name api \
@@ -113,11 +161,7 @@ jobs:
               acrLoginServer="${{ steps.platform.outputs.acrLoginServer }}" \
               identityId="${{ steps.platform.outputs.identityId }}" \
               apiImage="${{ steps.platform.outputs.acrLoginServer }}/roomflow-api:${{ github.sha }}" \
-              jwtSigningKey="$JWT_SIGNING_KEY" \
-              sqlFqdn="${{ steps.platform.outputs.sqlFqdn }}" \
-              sqlDatabaseName="${{ steps.platform.outputs.sqlDatabaseName }}" \
-              sqlAdminLogin="${{ steps.platform.outputs.sqlAdminLogin }}" \
-              sqlAdminPassword="$SQL_ADMIN_PASSWORD" \
+              keyVaultUri="${{ steps.platform.outputs.keyVaultUri }}" \
               corsOrigin="https://${{ steps.platform.outputs.swaHostname }}" \
               appInsightsName="${{ steps.platform.outputs.appInsightsName }}" \
             --query properties.outputs -o json > api-outputs.json
