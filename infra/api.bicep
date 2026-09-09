@@ -10,28 +10,14 @@ param environmentId string
 @description('ACR login server')
 param acrLoginServer string
 
-@description('User-assigned identity resource ID with AcrPull')
+@description('User-assigned identity resource ID with AcrPull and Key Vault Secrets User')
 param identityId string
 
 @description('Full image reference including tag')
 param apiImage string
 
-@description('JWT signing key (>= 32 bytes)')
-@secure()
-param jwtSigningKey string
-
-@description('Azure SQL fully qualified domain name')
-param sqlFqdn string
-
-@description('Azure SQL database name')
-param sqlDatabaseName string
-
-@description('SQL administrator login')
-param sqlAdminLogin string
-
-@description('SQL administrator password')
-@secure()
-param sqlAdminPassword string
+@description('Key Vault URI used for Container App secret references')
+param keyVaultUri string
 
 @description('Allowed CORS origin (Static Web App HTTPS origin)')
 param corsOrigin string
@@ -41,7 +27,6 @@ param appInsightsName string
 
 var unique = uniqueString(resourceGroup().id)
 var containerAppName = take('${prefix}-api-${unique}', 32)
-var sqlConnectionString = 'Server=tcp:${sqlFqdn},1433;Initial Catalog=${sqlDatabaseName};User ID=${sqlAdminLogin};Password=${sqlAdminPassword};Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=true;Connection Timeout=30;'
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
@@ -56,8 +41,7 @@ module containerApp 'modules/containerApp.bicep' = {
     acrLoginServer: acrLoginServer
     identityId: identityId
     apiImage: apiImage
-    jwtSigningKey: jwtSigningKey
-    sqlConnectionString: sqlConnectionString
+    keyVaultUri: keyVaultUri
     corsOrigin: corsOrigin
     applicationInsightsConnectionString: appInsights.properties.ConnectionString
   }

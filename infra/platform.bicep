@@ -11,6 +11,9 @@ param sqlAdminLogin string = 'roomflowadmin'
 @secure()
 param sqlAdminPassword string
 
+@description('Object ID of the GitHub Actions OIDC service principal')
+param deployerPrincipalId string
+
 var unique = uniqueString(resourceGroup().id)
 var acrName = toLower(take('${prefix}${unique}', 50))
 var sqlServerName = toLower(take('${prefix}-sql-${unique}', 63))
@@ -19,6 +22,7 @@ var logAnalyticsName = take('${prefix}-logs-${unique}', 63)
 var environmentName = take('${prefix}-env-${unique}', 60)
 var identityName = take('${prefix}-aca-id-${unique}', 64)
 var appInsightsName = take('${prefix}-ai-${unique}', 63)
+var keyVaultName = toLower(take('kv${prefix}${unique}', 24))
 
 module sql 'modules/sql.bicep' = {
   name: 'sql'
@@ -66,6 +70,16 @@ module swa 'modules/swa.bicep' = {
   }
 }
 
+module keyVault 'modules/keyVault.bicep' = {
+  name: 'key-vault'
+  params: {
+    location: location
+    vaultName: keyVaultName
+    identityPrincipalId: acr.outputs.identityPrincipalId
+    deployerPrincipalId: deployerPrincipalId
+  }
+}
+
 output acrName string = acr.outputs.acrName
 output acrLoginServer string = acr.outputs.loginServer
 output identityId string = acr.outputs.identityId
@@ -76,3 +90,5 @@ output sqlDatabaseName string = sql.outputs.databaseName
 output sqlAdminLogin string = sqlAdminLogin
 output swaName string = swa.outputs.name
 output swaHostname string = swa.outputs.defaultHostname
+output keyVaultName string = keyVault.outputs.vaultName
+output keyVaultUri string = keyVault.outputs.vaultUri
