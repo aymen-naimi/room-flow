@@ -191,12 +191,8 @@ jobs:
 
           SQL="
             DECLARE @expectedSid varbinary(85) = ${IDENTITY_SID};
-            DECLARE @dup sysname;
-            SELECT @dup = name
-            FROM sys.database_principals
-            WHERE sid = @expectedSid AND name <> N'${IDENTITY_NAME}';
-            IF @dup IS NOT NULL
-              EXEC(N'DROP USER ' + QUOTENAME(@dup));
+            IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'roomflow-aca-appid')
+              DROP USER [roomflow-aca-appid];
             IF EXISTS (
               SELECT 1 FROM sys.database_principals
               WHERE name = N'${IDENTITY_NAME}' AND sid <> @expectedSid
