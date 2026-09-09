@@ -86,6 +86,7 @@ output acrName string = acr.outputs.acrName
 output acrLoginServer string = acr.outputs.loginServer
 output identityId string = acr.outputs.identityId
 output identityClientId string = acr.outputs.identityClientId
+output identityPrincipalId string = acr.outputs.identityPrincipalId
 output identityName string = acr.outputs.identityName
 output environmentId string = containerAppsEnvironment.outputs.environmentId
 output appInsightsName string = appInsights.outputs.name

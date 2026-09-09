@@ -92,6 +92,7 @@ jobs:
             echo "acrLoginServer=$(jq -r '.acrLoginServer.value' platform-outputs.json)"
             echo "identityId=$(jq -r '.identityId.value' platform-outputs.json)"
             echo "identityClientId=$(jq -r '.identityClientId.value' platform-outputs.json)"
+            echo "identityPrincipalId=$(jq -r '.identityPrincipalId.value' platform-outputs.json)"
             echo "identityName=$(jq -r '.identityName.value' platform-outputs.json)"
             echo "environmentId=$(jq -r '.environmentId.value' platform-outputs.json)"
             echo "sqlFqdn=$(jq -r '.sqlFqdn.value' platform-outputs.json)"
@@ -150,11 +151,23 @@ jobs:
           SQL_FQDN: ${{ steps.platform.outputs.sqlFqdn }}
           SQL_DATABASE: ${{ steps.platform.outputs.sqlDatabaseName }}
           IDENTITY_NAME: ${{ steps.platform.outputs.identityName }}
+          IDENTITY_PRINCIPAL_ID: ${{ steps.platform.outputs.identityPrincipalId }}
         run: |
           set -euo pipefail
 
           if [[ ! "$IDENTITY_NAME" =~ ^[a-zA-Z0-9-]+$ ]]; then
             echo "Unexpected managed identity name: $IDENTITY_NAME"
+            exit 1
+          fi
+
+          if [[ ! "$IDENTITY_PRINCIPAL_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            echo "Unexpected managed identity object ID: $IDENTITY_PRINCIPAL_ID"
+            exit 1
+          fi
+
+          IDENTITY_SID=$(python3 -c "import uuid,sys; print('0x'+uuid.UUID(sys.argv[1]).bytes_le.hex())" "$IDENTITY_PRINCIPAL_ID")
+          if [[ ! "$IDENTITY_SID" =~ ^0x[0-9a-f]{32}$ ]]; then
+            echo "Unexpected SID for managed identity: $IDENTITY_SID"
             exit 1
           fi
 
@@ -177,7 +190,7 @@ jobs:
           rm -f sqlcmd.tar.bz2
 
           SQL="IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'${IDENTITY_NAME}')
-            CREATE USER [${IDENTITY_NAME}] FROM EXTERNAL PROVIDER;
+            CREATE USER [${IDENTITY_NAME}] WITH SID = ${IDENTITY_SID}, TYPE = E;
             IF NOT EXISTS (
               SELECT 1
               FROM sys.database_role_members drm
