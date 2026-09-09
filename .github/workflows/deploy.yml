@@ -188,7 +188,7 @@ jobs:
             ALTER ROLE db_owner ADD MEMBER [${IDENTITY_NAME}];"
 
           for i in 1 2 3 4 5 6 7 8; do
-            if sqlcmd -S "$SQL_FQDN" -d "$SQL_DATABASE" --authentication-method ActiveDirectoryAzureCLI -b -Q "$SQL"; then
+            if sqlcmd -S "$SQL_FQDN" -d "$SQL_DATABASE" --authentication-method ActiveDirectoryAzCli -b -Q "$SQL"; then
               exit 0
             fi
             echo "Entra admin or SQL user not ready yet (attempt $i), retrying in 15s..."
