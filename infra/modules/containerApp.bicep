@@ -27,6 +27,10 @@ param sqlConnectionString string
 @description('Allowed CORS origin (Static Web App HTTPS origin)')
 param corsOrigin string
 
+@description('Application Insights connection string')
+@secure()
+param applicationInsightsConnectionString string
+
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
@@ -59,6 +63,10 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         {
           name: 'sql-connection'
           value: sqlConnectionString
+        }
+        {
+          name: 'appinsights-connection'
+          value: applicationInsightsConnectionString
         }
       ]
     }
@@ -123,6 +131,10 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'AuthCookie__SameSite'
               value: 'None'
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              secretRef: 'appinsights-connection'
             }
           ]
           probes: [

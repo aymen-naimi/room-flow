@@ -11,13 +11,27 @@ using RoomFlow.Api;
 using RoomFlow.Infrastructure;
 using RoomFlow.Infrastructure.Persistence;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using OpenTelemetry.Instrumentation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddOpenTelemetry()
-    .UseAzureMonitor();
-    
+var azureMonitorConnectionString =
+    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+    ?? builder.Configuration["AzureMonitor:ConnectionString"];
+
+if (!string.IsNullOrWhiteSpace(azureMonitorConnectionString))
+{
+    builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
+    {
+        options.ConnectionString = azureMonitorConnectionString;
+    });
+    builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
+    {
+        options.Filter = httpContext =>
+            !httpContext.Request.Path.StartsWithSegments("/health");
+    });
+}
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();

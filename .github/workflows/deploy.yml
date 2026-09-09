@@ -81,6 +81,7 @@ jobs:
             echo "sqlAdminLogin=$(jq -r '.sqlAdminLogin.value' platform-outputs.json)"
             echo "swaName=$(jq -r '.swaName.value' platform-outputs.json)"
             echo "swaHostname=$(jq -r '.swaHostname.value' platform-outputs.json)"
+            echo "appInsightsName=$(jq -r '.appInsightsName.value' platform-outputs.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Login to ACR
@@ -118,6 +119,7 @@ jobs:
               sqlAdminLogin="${{ steps.platform.outputs.sqlAdminLogin }}" \
               sqlAdminPassword="$SQL_ADMIN_PASSWORD" \
               corsOrigin="https://${{ steps.platform.outputs.swaHostname }}" \
+              appInsightsName="${{ steps.platform.outputs.appInsightsName }}" \
             --query properties.outputs -o json > api-outputs.json
 
           echo "apiFqdn=$(jq -r '.apiFqdn.value' api-outputs.json)" >> "$GITHUB_OUTPUT"

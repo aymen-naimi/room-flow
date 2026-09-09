@@ -27,7 +27,7 @@ Then sign out and sign in again so the new role is in the JWT.
 
 - **Frontend:** Angular 22, Angular Material, signals
 - **Backend:** ASP.NET Core (.NET 10), EF Core, MediatR (CQRS), JWT
-- **Cloud:** Azure SQL, Container Apps, Static Web Apps, GitHub Actions
+- **Cloud:** Azure SQL, Container Apps, Static Web Apps, Application Insights, GitHub Actions
 
 ## Architecture
 
@@ -48,7 +48,8 @@ flowchart LR
 Prerequisites: .NET 10 SDK, Node.js 22, SQL Server LocalDB.
 
 1. Copy [`backend/RoomFlow.Api/appsettings.example.json`](backend/RoomFlow.Api/appsettings.example.json) to `backend/RoomFlow.Api/appsettings.json` and set the connection string and JWT signing key (at least 32 bytes).
-2. Start the API (`APPLY_MIGRATIONS=true` in [`launchSettings.json`](backend/RoomFlow.Api/Properties/launchSettings.json) applies pending migrations on startup):
+2. Optional: store `APPLICATIONINSIGHTS_CONNECTION_STRING` or `AzureMonitor:ConnectionString` in .NET User Secrets (`UserSecretsId` `RoomFlow-Api`) so local `dotnet run` sends telemetry. Without it, the API still starts (Azure Monitor is not registered). Docker Compose and CI do not set this value. Probe requests to `/health` are excluded from traces.
+3. Start the API (`APPLY_MIGRATIONS=true` in [`launchSettings.json`](backend/RoomFlow.Api/Properties/launchSettings.json) applies pending migrations on startup):
 
 ```bash
 dotnet run --project backend/RoomFlow.Api
@@ -62,7 +63,7 @@ To apply migrations without starting the API:
 dotnet ef database update --project backend/RoomFlow.Infrastructure --startup-project backend/RoomFlow.Api
 ```
 
-3. Start the frontend:
+4. Start the frontend:
 
 ```bash
 cd frontend
@@ -99,7 +100,9 @@ SQL Server data is kept in the `sqlserver_data` volume. To reset everything: `do
 
 ## CI/CD (GitHub Actions → Azure)
 
-Pull requests run [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (`dotnet test` + `ng test`). Pushes to `main` run [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): Bicep (Azure SQL, ACR, Container Apps, Static Web Apps Free), API image, then the Angular app.
+Pull requests run [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (`dotnet test` + `ng test`). Pushes to `main` run [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): Bicep (Azure SQL, ACR, Container Apps, Application Insights, Static Web Apps Free), API image, then the Angular app.
+
+Production Application Insights is created by Bicep and linked to the Log Analytics workspace. The connection string is stored as a Container App secret and injected as `APPLICATIONINSIGHTS_CONNECTION_STRING`. It is **not** a GitHub Actions secret.
 
 The browser calls the Container Apps API by HTTPS (CORS). Local and Docker still use relative `/api` URLs.
 

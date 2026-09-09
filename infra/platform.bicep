@@ -18,6 +18,7 @@ var swaName = toLower(take('${prefix}-swa-${unique}', 60))
 var logAnalyticsName = take('${prefix}-logs-${unique}', 63)
 var environmentName = take('${prefix}-env-${unique}', 60)
 var identityName = take('${prefix}-aca-id-${unique}', 64)
+var appInsightsName = take('${prefix}-ai-${unique}', 63)
 
 module sql 'modules/sql.bicep' = {
   name: 'sql'
@@ -48,6 +49,15 @@ module containerAppsEnvironment 'modules/containerAppsEnvironment.bicep' = {
   }
 }
 
+module appInsights 'modules/appInsights.bicep' = {
+  name: 'app-insights'
+  params: {
+    location: location
+    name: appInsightsName
+    workspaceResourceId: containerAppsEnvironment.outputs.logAnalyticsWorkspaceId
+  }
+}
+
 module swa 'modules/swa.bicep' = {
   name: 'swa'
   params: {
@@ -60,6 +70,7 @@ output acrName string = acr.outputs.acrName
 output acrLoginServer string = acr.outputs.loginServer
 output identityId string = acr.outputs.identityId
 output environmentId string = containerAppsEnvironment.outputs.environmentId
+output appInsightsName string = appInsights.outputs.name
 output sqlFqdn string = sql.outputs.fullyQualifiedDomainName
 output sqlDatabaseName string = sql.outputs.databaseName
 output sqlAdminLogin string = sqlAdminLogin
