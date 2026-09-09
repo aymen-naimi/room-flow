@@ -32,6 +32,8 @@ module sql 'modules/sql.bicep' = {
     administratorPassword: sqlAdminPassword
     serverName: sqlServerName
     databaseName: 'RoomFlow'
+    entraAdminPrincipalId: deployerPrincipalId
+    entraAdminLogin: 'github-oidc'
   }
 }
 
@@ -83,10 +85,13 @@ module keyVault 'modules/keyVault.bicep' = {
 output acrName string = acr.outputs.acrName
 output acrLoginServer string = acr.outputs.loginServer
 output identityId string = acr.outputs.identityId
+output identityClientId string = acr.outputs.identityClientId
+output identityName string = acr.outputs.identityName
 output environmentId string = containerAppsEnvironment.outputs.environmentId
 output appInsightsName string = appInsights.outputs.name
 output sqlFqdn string = sql.outputs.fullyQualifiedDomainName
 output sqlDatabaseName string = sql.outputs.databaseName
+output sqlServerName string = sql.outputs.serverName
 output sqlAdminLogin string = sqlAdminLogin
 output swaName string = swa.outputs.name
 output swaHostname string = swa.outputs.defaultHostname

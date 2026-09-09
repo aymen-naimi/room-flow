@@ -27,7 +27,7 @@ Then sign out and sign in again so the new role is in the JWT.
 
 - **Frontend:** Angular 22, Angular Material, signals
 - **Backend:** ASP.NET Core (.NET 10), EF Core, MediatR (CQRS), JWT
-- **Cloud:** Azure SQL, Container Apps, Key Vault, Static Web Apps, Application Insights, GitHub Actions
+- **Cloud:** Azure SQL (Entra ID + managed identity), Container Apps, Key Vault, Static Web Apps, Application Insights, GitHub Actions
 
 ## Architecture
 
@@ -102,7 +102,7 @@ SQL Server data is kept in the `sqlserver_data` volume. To reset everything: `do
 
 Pull requests run [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (`dotnet test` + `ng test`). Pushes to `main` run [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): Bicep (Azure SQL, ACR, Key Vault, Container Apps, Application Insights, Static Web Apps Free), API image, then the Angular app.
 
-GitHub Actions seeds Key Vault (`jwt-signing-key`, `sql-admin-password`, `sql-connection`) from existing GitHub secrets. The Container App reads those secrets through Key Vault references and the user-assigned identity (Key Vault Secrets User). JWT and SQL values are **not** passed into the API Bicep deployment.
+GitHub Actions seeds Key Vault (`jwt-signing-key`, `sql-admin-password`) from existing GitHub secrets. The Container App reads the JWT signing key through a Key Vault reference and the user-assigned identity (Key Vault Secrets User). On Azure, the API connects to SQL with **Microsoft Entra ID and that same identity** — no SQL password in the connection string. Local and Docker still use a SQL login (LocalDB / `sa`).
 
 Production Application Insights is created by Bicep and linked to the Log Analytics workspace. The connection string is stored as a Container App secret and injected as `APPLICATIONINSIGHTS_CONNECTION_STRING`. It is **not** a GitHub Actions secret.
 
@@ -111,7 +111,7 @@ The browser calls the Container Apps API by HTTPS (CORS). Local and Docker still
 ### One-time Azure / GitHub setup
 
 1. Create an Azure AD app registration (or user-assigned identity) and a **federated credential** for this repo (`repo:aymen-naimi/room-flow:ref:refs/heads/main`). Copy the service principal **object ID** (`az ad sp show --id <AZURE_CLIENT_ID> --query id -o tsv`) into `AZURE_PRINCIPAL_ID` so the workflow does not need Microsoft Graph at deploy time.
-2. Grant that identity **Contributor** and **User Access Administrator** on the subscription or on resource group `rg-roomflow` (role assignments are required so the Container App identity can pull from ACR and so Bicep can grant Key Vault data-plane roles). **Key Vault Secrets Officer** (GitHub) and **Key Vault Secrets User** (Container App identity) are assigned by Bicep on the vault; do not add them by hand.
+2. Grant that identity **Contributor** and **User Access Administrator** on the subscription or on resource group `rg-roomflow` (role assignments are required so the Container App identity can pull from ACR and so Bicep can grant Key Vault data-plane roles). **Key Vault Secrets Officer** (GitHub) and **Key Vault Secrets User** (Container App identity) are assigned by Bicep on the vault. The GitHub OIDC principal is set as the SQL Microsoft Entra admin; the workflow then creates a database user for the Container App identity. Do not add these by hand.
 3. Add GitHub Actions secrets:
 
 | Secret | Purpose |
@@ -119,12 +119,12 @@ The browser calls the Container Apps API by HTTPS (CORS). Local and Docker still
 | `AZURE_CLIENT_ID` | App registration (or managed identity) client ID |
 | `AZURE_TENANT_ID` | Azure AD tenant |
 | `AZURE_SUBSCRIPTION_ID` | Subscription that hosts `rg-roomflow` |
-| `AZURE_PRINCIPAL_ID` | Object ID of that service principal (not the client ID). Used for Key Vault Secrets Officer. If omitted, the workflow calls `az ad sp show`, which needs Microsoft Graph. |
-| `SQL_ADMIN_PASSWORD` | Azure SQL admin password (uppercase, lowercase, digit, symbol). Also written to Key Vault on each deploy. |
+| `AZURE_PRINCIPAL_ID` | Object ID of that service principal (not the client ID). Used for Key Vault Secrets Officer and as the SQL Entra admin. If omitted, the workflow calls `az ad sp show`, which needs Microsoft Graph. |
+| `SQL_ADMIN_PASSWORD` | Azure SQL admin password (uppercase, lowercase, digit, symbol). Creates the server and is stored in Key Vault as break-glass. The app does **not** use it. |
 | `JWT_SIGNING_KEY` | JWT key, at least 32 bytes. Written to Key Vault on each deploy. |
 | `AZURE_STATIC_WEB_APPS_API_TOKEN` | Optional. If omitted, the workflow reads the token from the Static Web App after Bicep create |
 
-Keep `SQL_ADMIN_PASSWORD` and `JWT_SIGNING_KEY`: they still create the SQL server and seed the vault. They are no longer passed to the Container App.
+Keep `SQL_ADMIN_PASSWORD` and `JWT_SIGNING_KEY`. They are not passed to the Container App.
 
 4. Push to `main` (or run **Deploy Azure** via workflow_dispatch).
 

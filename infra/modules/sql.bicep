@@ -14,6 +14,12 @@ param serverName string
 @description('Database name')
 param databaseName string = 'RoomFlow'
 
+@description('Object ID of the Microsoft Entra admin (GitHub Actions OIDC principal)')
+param entraAdminPrincipalId string
+
+@description('Display name of the Microsoft Entra admin')
+param entraAdminLogin string = 'github-oidc'
+
 resource server 'Microsoft.Sql/servers@2023-08-01-preview' = {
   name: serverName
   location: location
@@ -48,5 +54,17 @@ resource database 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
   }
 }
 
+resource entraAdmin 'Microsoft.Sql/servers/administrators@2023-08-01-preview' = {
+  parent: server
+  name: 'ActiveDirectory'
+  properties: {
+    administratorType: 'ActiveDirectory'
+    login: entraAdminLogin
+    sid: entraAdminPrincipalId
+    tenantId: tenant().tenantId
+  }
+}
+
 output fullyQualifiedDomainName string = server.properties.fullyQualifiedDomainName
 output databaseName string = database.name
+output serverName string = server.name
