@@ -43,3 +43,5 @@ output loginServer string = acr.properties.loginServer
 output acrName string = acr.name
 output identityId string = identity.id
 output identityPrincipalId string = identity.properties.principalId
+output identityClientId string = identity.properties.clientId
+output identityName string = identity.name

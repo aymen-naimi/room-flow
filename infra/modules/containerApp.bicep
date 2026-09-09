@@ -19,6 +19,9 @@ param apiImage string
 @description('Key Vault URI (trailing slash), e.g. https://myvault.vault.azure.net/')
 param keyVaultUri string
 
+@description('Azure SQL connection string (Entra managed identity, no password)')
+param sqlConnectionString string
+
 @description('Allowed CORS origin (Static Web App HTTPS origin)')
 param corsOrigin string
 
@@ -54,11 +57,6 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         {
           name: 'jwt-signing-key'
           keyVaultUrl: uri(keyVaultUri, 'secrets/jwt-signing-key')
-          identity: identityId
-        }
-        {
-          name: 'sql-connection'
-          keyVaultUrl: uri(keyVaultUri, 'secrets/sql-connection')
           identity: identityId
         }
         {
@@ -115,7 +113,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'ConnectionStrings__DefaultConnection'
-              secretRef: 'sql-connection'
+              value: sqlConnectionString
             }
             {
               name: 'Cors__AllowedOrigins__0'

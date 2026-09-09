@@ -91,9 +91,12 @@ jobs:
             echo "acrName=$(jq -r '.acrName.value' platform-outputs.json)"
             echo "acrLoginServer=$(jq -r '.acrLoginServer.value' platform-outputs.json)"
             echo "identityId=$(jq -r '.identityId.value' platform-outputs.json)"
+            echo "identityClientId=$(jq -r '.identityClientId.value' platform-outputs.json)"
+            echo "identityName=$(jq -r '.identityName.value' platform-outputs.json)"
             echo "environmentId=$(jq -r '.environmentId.value' platform-outputs.json)"
             echo "sqlFqdn=$(jq -r '.sqlFqdn.value' platform-outputs.json)"
             echo "sqlDatabaseName=$(jq -r '.sqlDatabaseName.value' platform-outputs.json)"
+            echo "sqlServerName=$(jq -r '.sqlServerName.value' platform-outputs.json)"
             echo "sqlAdminLogin=$(jq -r '.sqlAdminLogin.value' platform-outputs.json)"
             echo "swaName=$(jq -r '.swaName.value' platform-outputs.json)"
             echo "swaHostname=$(jq -r '.swaHostname.value' platform-outputs.json)"
@@ -107,14 +110,8 @@ jobs:
           JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY }}
           SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
           KV_NAME: ${{ steps.platform.outputs.keyVaultName }}
-          SQL_FQDN: ${{ steps.platform.outputs.sqlFqdn }}
-          SQL_DATABASE: ${{ steps.platform.outputs.sqlDatabaseName }}
-          SQL_LOGIN: ${{ steps.platform.outputs.sqlAdminLogin }}
         run: |
           set -euo pipefail
-
-          SQL_CONNECTION_STRING="Server=tcp:${SQL_FQDN},1433;Initial Catalog=${SQL_DATABASE};User ID=${SQL_LOGIN};Password=${SQL_ADMIN_PASSWORD};Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=true;Connection Timeout=30;"
-          echo "::add-mask::$SQL_CONNECTION_STRING"
 
           set_secret() {
             local name="$1"
@@ -133,7 +130,6 @@ jobs:
 
           set_secret jwt-signing-key "$JWT_SIGNING_KEY"
           set_secret sql-admin-password "$SQL_ADMIN_PASSWORD"
-          set_secret sql-connection "$SQL_CONNECTION_STRING"
 
       - name: Login to ACR
         run: az acr login --name "${{ steps.platform.outputs.acrName }}"
@@ -146,6 +142,75 @@ jobs:
             backend
           docker push \
             "${{ steps.platform.outputs.acrLoginServer }}/roomflow-api:${{ github.sha }}"
+
+      - name: Grant SQL access to managed identity
+        id: sql-grant
+        env:
+          SQL_SERVER_NAME: ${{ steps.platform.outputs.sqlServerName }}
+          SQL_FQDN: ${{ steps.platform.outputs.sqlFqdn }}
+          SQL_DATABASE: ${{ steps.platform.outputs.sqlDatabaseName }}
+          IDENTITY_NAME: ${{ steps.platform.outputs.identityName }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$IDENTITY_NAME" =~ ^[a-zA-Z0-9-]+$ ]]; then
+            echo "Unexpected managed identity name: $IDENTITY_NAME"
+            exit 1
+          fi
+
+          RUNNER_IP=$(curl -4 -s https://api.ipify.org)
+          RULE_NAME="gha-${GITHUB_RUN_ID}"
+          echo "ruleName=$RULE_NAME" >> "$GITHUB_OUTPUT"
+
+          az sql server firewall-rule create \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --server "$SQL_SERVER_NAME" \
+            --name "$RULE_NAME" \
+            --start-ip-address "$RUNNER_IP" \
+            --end-ip-address "$RUNNER_IP"
+
+          curl -fsSL -o sqlcmd.tar.bz2 \
+            https://github.com/microsoft/go-sqlcmd/releases/download/v1.8.2/sqlcmd-linux-amd64.tar.bz2
+          tar -xjf sqlcmd.tar.bz2
+          chmod +x sqlcmd
+          sudo mv sqlcmd /usr/local/bin/sqlcmd
+          rm -f sqlcmd.tar.bz2
+
+          SQL="IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'${IDENTITY_NAME}')
+            CREATE USER [${IDENTITY_NAME}] FROM EXTERNAL PROVIDER;
+            IF NOT EXISTS (
+              SELECT 1
+              FROM sys.database_role_members drm
+              INNER JOIN sys.database_principals r ON drm.role_principal_id = r.principal_id
+              INNER JOIN sys.database_principals m ON drm.member_principal_id = m.principal_id
+              WHERE r.name = N'db_owner' AND m.name = N'${IDENTITY_NAME}'
+            )
+            ALTER ROLE db_owner ADD MEMBER [${IDENTITY_NAME}];"
+
+          for i in 1 2 3 4 5 6 7 8; do
+            if sqlcmd -S "$SQL_FQDN" -d "$SQL_DATABASE" --authentication-method ActiveDirectoryAzureCLI -b -Q "$SQL"; then
+              exit 0
+            fi
+            echo "Entra admin or SQL user not ready yet (attempt $i), retrying in 15s..."
+            sleep 15
+          done
+
+          echo "Failed to grant SQL access to $IDENTITY_NAME"
+          exit 1
+
+      - name: Remove GitHub runner SQL firewall rule
+        if: always() && steps.sql-grant.outcome != 'skipped'
+        env:
+          SQL_SERVER_NAME: ${{ steps.platform.outputs.sqlServerName }}
+          RULE_NAME: ${{ steps.sql-grant.outputs.ruleName }}
+        run: |
+          if [ -n "${RULE_NAME:-}" ]; then
+            az sql server firewall-rule delete \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --server "$SQL_SERVER_NAME" \
+              --name "$RULE_NAME" \
+              --yes || true
+          fi
 
       - name: Deploy API
         id: api
@@ -160,8 +225,11 @@ jobs:
               environmentId="${{ steps.platform.outputs.environmentId }}" \
               acrLoginServer="${{ steps.platform.outputs.acrLoginServer }}" \
               identityId="${{ steps.platform.outputs.identityId }}" \
+              identityClientId="${{ steps.platform.outputs.identityClientId }}" \
               apiImage="${{ steps.platform.outputs.acrLoginServer }}/roomflow-api:${{ github.sha }}" \
               keyVaultUri="${{ steps.platform.outputs.keyVaultUri }}" \
+              sqlFqdn="${{ steps.platform.outputs.sqlFqdn }}" \
+              sqlDatabaseName="${{ steps.platform.outputs.sqlDatabaseName }}" \
               corsOrigin="https://${{ steps.platform.outputs.swaHostname }}" \
               appInsightsName="${{ steps.platform.outputs.appInsightsName }}" \
             --query properties.outputs -o json > api-outputs.json
