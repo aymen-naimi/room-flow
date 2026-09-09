@@ -36,9 +36,16 @@ param sqlAdminPassword string
 @description('Allowed CORS origin (Static Web App HTTPS origin)')
 param corsOrigin string
 
+@description('Application Insights component name in this resource group')
+param appInsightsName string
+
 var unique = uniqueString(resourceGroup().id)
 var containerAppName = take('${prefix}-api-${unique}', 32)
 var sqlConnectionString = 'Server=tcp:${sqlFqdn},1433;Initial Catalog=${sqlDatabaseName};User ID=${sqlAdminLogin};Password=${sqlAdminPassword};Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=true;Connection Timeout=30;'
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsightsName
+}
 
 module containerApp 'modules/containerApp.bicep' = {
   name: 'container-app'
@@ -52,6 +59,7 @@ module containerApp 'modules/containerApp.bicep' = {
     jwtSigningKey: jwtSigningKey
     sqlConnectionString: sqlConnectionString
     corsOrigin: corsOrigin
+    applicationInsightsConnectionString: appInsights.properties.ConnectionString
   }
 }
 
