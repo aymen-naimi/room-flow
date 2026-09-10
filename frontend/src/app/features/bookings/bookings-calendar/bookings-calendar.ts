@@ -10,12 +10,9 @@ import {
   SlotHeaderInfo,
   SlotLaneInfo,
 } from '@fullcalendar/angular';
-import interactionPlugin from '@fullcalendar/angular/interaction';
-import timeGridPlugin from '@fullcalendar/angular/timegrid';
-import themePlugin from '@fullcalendar/angular/themes/monarch';
-import frLocale from 'fullcalendar/locales/fr';
 import { AuthService } from '../../../core/auth/auth.service';
 import { isBookingDayStart, roomTone, toUtcIso } from '../bookings.helpers';
+import { BookingsCalendarBaseOptions } from './bookings-calendar.options';
 
 @Component({
   selector: 'app-bookings-calendar',
@@ -33,22 +30,7 @@ export class BookingsCalendar {
   readonly eventClick = output<EventClickInfo>();
 
   protected readonly calendarOptions: CalendarOptions = {
-    plugins: [themePlugin, timeGridPlugin, interactionPlugin],
-    initialView: 'timeGridWeek',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: '',
-    },
-    locale: frLocale,
-    timeZone: 'Europe/Paris',
-    height: 'auto',
-    slotMinTime: '08:00:00',
-    slotMaxTime: '20:00:00',
-    slotDuration: '00:15:00',
-    allDaySlot: false,
-    selectable: true,
-    selectMirror: true,
+    ...BookingsCalendarBaseOptions,
     datesSet: (info) => {
       this.datesSet.emit(info);
     },
