@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,6 +28,7 @@ export const RoomDeleteSuccessMessage = 'Salle supprimée.';
   imports: [DatePipe, Page, RouterLink, MatButton, MatIconButton, MatIcon, MatTooltip],
   templateUrl: './rooms-list.html',
   styleUrl: './rooms-list.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomsList implements OnInit {
   private readonly roomsService = inject(RoomsService);

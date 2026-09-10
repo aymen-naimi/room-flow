@@ -1,4 +1,12 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButton } from '@angular/material/button';
@@ -72,6 +80,7 @@ export const BookingDeleteConfirm = 'Annuler la réservation';
   ],
   templateUrl: './bookings.html',
   styleUrl: './bookings.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Bookings implements OnInit {
   private readonly bookingsService = inject(BookingsService);

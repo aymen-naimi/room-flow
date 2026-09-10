@@ -1,4 +1,4 @@
-import { Component, input, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 
 export type PageSize = 'default' | 'wide' | 'narrow';
 
@@ -7,6 +7,7 @@ export type PageSize = 'default' | 'wide' | 'narrow';
   templateUrl: './page.html',
   styleUrl: './page.scss',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Page {
   readonly title = input.required<string>();
