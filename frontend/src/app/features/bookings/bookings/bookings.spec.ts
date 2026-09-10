@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -59,6 +59,7 @@ describe('Bookings', () => {
   async function setup(
     options: {
       confirmed?: boolean;
+      completeDefer?: boolean;
       mode?: BookingsMode;
       roomId?: string;
       rooms?: Room[];
@@ -71,12 +72,14 @@ describe('Bookings', () => {
     bookingsRequest: ReturnType<HttpTestingController['expectOne']> | undefined;
   }> {
     const confirmed = options.confirmed ?? true;
+    const completeDefer = options.completeDefer ?? true;
     const mode = options.mode ?? BookingsRoomMode;
     const rooms = options.rooms ?? roomsMock;
     const toast = { error: vi.fn(), success: vi.fn() };
     const openDialog = vi.fn(() => ({ afterClosed: () => of(confirmed) }));
 
     await TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
       imports: [Bookings],
       providers: [
         provideHttpClient(),
@@ -109,7 +112,16 @@ describe('Bookings', () => {
     http.expectOne('/api/rooms').flush(rooms);
     await fixture.whenStable();
     fixture.detectChanges();
-    const bookingsRequest = await flushBookingsList(http);
+
+    if (completeDefer) {
+      const blocks = await fixture.getDeferBlocks();
+      if (blocks.length) {
+        await blocks[0].render(DeferBlockState.Complete);
+        fixture.detectChanges();
+      }
+    }
+
+    const bookingsRequest = completeDefer ? await flushBookingsList(http) : undefined;
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -183,6 +195,19 @@ describe('Bookings', () => {
     expect(fixture.nativeElement.textContent).toContain('Choisissez une salle');
     expect(fixture.nativeElement.querySelector('full-calendar')).toBeNull();
     expect(fixture.nativeElement.querySelector('.bookings__reserve').disabled).toBe(true);
+    expect(bookingsRequest).toBeUndefined();
+    http.verify();
+  });
+
+  it('shows a calendar placeholder until the deferred chunk is ready', async () => {
+    const { fixture, http, bookingsRequest } = await setup({ mode: 'mine', completeDefer: false });
+    const blocks = await fixture.getDeferBlocks();
+    expect(blocks.length).toBe(1);
+    await blocks[0].render(DeferBlockState.Placeholder);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Chargement du planning…');
+    expect(fixture.nativeElement.querySelector('full-calendar')).toBeNull();
     expect(bookingsRequest).toBeUndefined();
     http.verify();
   });

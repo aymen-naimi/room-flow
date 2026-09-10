@@ -47,8 +47,15 @@
       <p class="bookings__empty-text">Sélectionnez une salle ci-dessus pour afficher son planning.</p>
     </div>
   } @else {
-    <div class="bookings__calendar">
-      <full-calendar [options]="calendarOptions" [events]="events()" />
-    </div>
+    @defer (on immediate) {
+      <app-bookings-calendar
+        [events]="events()"
+        (datesSet)="onDatesSet($event)"
+        (selectRange)="onSelect($event)"
+        (eventClick)="onEventClick($event)"
+      />
+    } @placeholder {
+      <p class="page__status">Chargement du planning…</p>
+    }
   }
 </app-page>

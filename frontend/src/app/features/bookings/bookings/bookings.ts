@@ -15,21 +15,12 @@ import { MatFormField, MatLabel, MatPrefix } from '@angular/material/form-field'
 import { MatIcon } from '@angular/material/icon';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
-import {
-  CalendarOptions,
+import type {
   DateSelectInfo,
   DatesSetInfo,
   EventClickInfo,
-  EventDisplayInfo,
   EventInput,
-  FullCalendarModule,
-  SlotHeaderInfo,
-  SlotLaneInfo,
 } from '@fullcalendar/angular';
-import interactionPlugin from '@fullcalendar/angular/interaction';
-import timeGridPlugin from '@fullcalendar/angular/timegrid';
-import themePlugin from '@fullcalendar/angular/themes/monarch';
-import frLocale from 'fullcalendar/locales/fr';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog';
@@ -40,11 +31,10 @@ import { RoomsService } from '../../rooms/rooms.service';
 import {
   bookingRangeFromSelection,
   defaultBookingRange,
-  isBookingDayStart,
   roomCapacityLabel,
-  roomTone,
   toUtcIso,
 } from '../bookings.helpers';
+import { BookingsCalendar } from '../bookings-calendar/bookings-calendar';
 import { BookingsCreateDialog } from '../bookings-create-dialog/bookings-create-dialog';
 import { Booking, GetBookingsFilter } from '../bookings.model';
 import { BookingsService } from '../bookings.service';
@@ -66,7 +56,7 @@ export const BookingDeleteConfirm = 'Annuler la réservation';
 @Component({
   selector: 'app-bookings',
   imports: [
-    FullCalendarModule,
+    BookingsCalendar,
     Page,
     RouterLink,
     MatButton,
@@ -118,38 +108,6 @@ export class Bookings implements OnInit {
 
   private currentRange: { from: string; to: string } | null = null;
 
-  protected readonly calendarOptions: CalendarOptions = {
-    plugins: [themePlugin, timeGridPlugin, interactionPlugin],
-    initialView: 'timeGridWeek',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: '',
-    },
-    locale: frLocale,
-    timeZone: 'Europe/Paris',
-    height: 'auto',
-    slotMinTime: '08:00:00',
-    slotMaxTime: '20:00:00',
-    slotDuration: '00:15:00',
-    allDaySlot: false,
-    selectable: true,
-    selectMirror: true,
-    datesSet: (info) => {
-      void this.onDatesSet(info);
-    },
-    select: (info) => {
-      void this.onSelect(info);
-    },
-    eventClick: (info) => {
-      void this.onEventClick(info);
-    },
-    eventClass: (arg: EventDisplayInfo) => this.eventClassNames(arg.event.extendedProps).join(' '),
-    slotLaneClass: (arg: SlotLaneInfo) => this.slotStartClass(arg.date),
-    slotHeaderClass: (arg: SlotHeaderInfo) => this.slotStartClass(arg.date),
-    selectAllow: (span) => this.isFuture(span.start),
-  };
-
   public async ngOnInit(): Promise<void> {
     try {
       const rooms = await firstValueFrom(this.roomsService.getRooms());
@@ -200,7 +158,7 @@ export class Bookings implements OnInit {
     await this.router.navigate(['/in/bookings', roomId], { replaceUrl: true });
   }
 
-  private async onDatesSet(info: DatesSetInfo): Promise<void> {
+  protected async onDatesSet(info: DatesSetInfo): Promise<void> {
     this.currentRange = {
       from: toUtcIso(info.start),
       to: toUtcIso(info.end),
@@ -237,7 +195,7 @@ export class Bookings implements OnInit {
     return { mine: true };
   }
 
-  private async onSelect(info: DateSelectInfo): Promise<void> {
+  protected async onSelect(info: DateSelectInfo): Promise<void> {
     info.view.calendar.unselect();
     if (!this.hasRooms() || this.isMutating()) {
       return;
@@ -266,7 +224,7 @@ export class Bookings implements OnInit {
     }
   }
 
-  private async onEventClick(info: EventClickInfo): Promise<void> {
+  protected async onEventClick(info: EventClickInfo): Promise<void> {
     const bookingId = String(info.event.id);
     const userId = String(info.event.extendedProps['userId'] ?? '');
     const currentUserId = this.auth.currentUser()?.id;
@@ -319,24 +277,5 @@ export class Bookings implements OnInit {
 
   private roomCapacity(roomId: string): number | undefined {
     return this.rooms().find((room) => room.id === roomId)?.capacity;
-  }
-
-  private eventClassNames(extendedProps: Record<string, unknown>): string[] {
-    const currentUserId = this.auth.currentUser()?.id;
-    const userId = String(extendedProps['userId'] ?? '');
-    const roomId = String(extendedProps['roomId'] ?? '');
-    const mine = currentUserId !== undefined && userId === currentUserId;
-    return [
-      mine ? 'bookings__event--mine' : 'bookings__event--other',
-      `bookings__event--room-${roomTone(roomId)}`,
-    ];
-  }
-
-  private slotStartClass(date: Date): string {
-    return isBookingDayStart(date) ? 'bookings__slot--start' : '';
-  }
-
-  private isFuture(start: unknown): boolean {
-    return new Date(toUtcIso(start)).getTime() >= Date.now();
   }
 }
