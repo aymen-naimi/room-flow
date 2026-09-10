@@ -12,14 +12,15 @@ Do not change this stack. Do not suggest other frontend frameworks unless explic
 - Angular, TypeScript, JavaScript
 - RxJS, NgRx, Signals
 - Angular Material, HTML5, CSS3, SCSS
-- Performance: lazy loading, standalone components
+- Performance: lazy loading, standalone components, ChangeDetectionStrategy.OnPush
 
 ## Conventions
 
 - Standalone components only (no NgModules)
+- Every component uses `changeDetection: ChangeDetectionStrategy.OnPush` (not inherited from the parent; Default is Angular’s default)
 - Feature routes under `frontend/src/app/features`, lazy-loaded with `loadComponent`
 - HTTP via Angular `HttpClient`; talk to the API through `/api` (dev proxy in `proxy.conf.json`)
-- Prefer Signals for component state; use RxJS for HTTP and streams; use NgRx when state is shared across features
+- Prefer Signals for component state; use RxJS for HTTP and streams; use NgRx when state is shared across features. Do not mutate arrays/objects in place when they are read by the template — replace via `signal.set` / `update`
 - Style with Angular Material and BEM/SCSS; keep a consistent Design System (do not invent a parallel UI kit, do not use Tailwind)
 - Custom component CSS uses BEM: `block__element--modifier` (e.g. `rooms__status--error`). Do not style via tag descendants (`.rooms h1`); give the element its own class. Nest SCSS as `&__element` / `&--modifier` under the block.
 - Colors and fonts live in `frontend/src/styles/_variables.scss` as SCSS variables. Import with `@use 'variables' as tokens` and use `tokens.$color-text` — do not hardcode hex values in components.

@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -72,6 +72,7 @@ export const BookingCreateErrorMessage = {
   providers: [provideNativeDateAdapter()],
   templateUrl: './bookings-create-dialog.html',
   styleUrl: './bookings-create-dialog.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingsCreateDialog {
   private readonly bookingsService = inject(BookingsService);

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatButton } from '@angular/material/button';
 import { firstValueFrom } from 'rxjs';
@@ -9,6 +9,7 @@ import { AuthService } from '../auth/auth.service';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, MatButton],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayout {
   private readonly auth = inject(AuthService);
