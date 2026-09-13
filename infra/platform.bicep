@@ -82,10 +82,6 @@ module keyVault 'modules/keyVault.bicep' = {
   }
 }
 
-resource appInsightsExisting 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: appInsights.outputs.name
-}
-
 module bookingEmail 'modules/bookingEmail.bicep' = {
   name: 'booking-email'
   params: {
@@ -93,7 +89,7 @@ module bookingEmail 'modules/bookingEmail.bicep' = {
     prefix: prefix
     apiIdentityPrincipalId: acr.outputs.identityPrincipalId
     deployerPrincipalId: deployerPrincipalId
-    applicationInsightsConnectionString: appInsightsExisting.properties.ConnectionString
+    applicationInsightsConnectionString: appInsights.outputs.connectionString
   }
 }
 
