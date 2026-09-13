@@ -34,6 +34,12 @@ param corsOrigin string
 @description('Application Insights component name in this resource group')
 param appInsightsName string
 
+@description('Service Bus fully qualified namespace')
+param serviceBusFullyQualifiedNamespace string
+
+@description('Service Bus queue name')
+param serviceBusQueueName string
+
 var unique = uniqueString(resourceGroup().id)
 var containerAppName = take('${prefix}-api-${unique}', 32)
 var sqlConnectionString = 'Server=tcp:${sqlFqdn},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;User Id=${identityClientId};Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=true;Connection Timeout=30;'
@@ -55,6 +61,9 @@ module containerApp 'modules/containerApp.bicep' = {
     sqlConnectionString: sqlConnectionString
     corsOrigin: corsOrigin
     applicationInsightsConnectionString: appInsights.properties.ConnectionString
+    identityClientId: identityClientId
+    serviceBusFullyQualifiedNamespace: serviceBusFullyQualifiedNamespace
+    serviceBusQueueName: serviceBusQueueName
   }
 }
 

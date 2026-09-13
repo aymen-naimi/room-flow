@@ -18,6 +18,11 @@ jobs:
           --configuration Release
           --nologo
           --logger GitHubActions
+      - name: Build Functions
+        run: >
+          dotnet build backend/RoomFlow.Functions/RoomFlow.Functions.csproj
+          --configuration Release
+          --nologo
 
   frontend:
     runs-on: ubuntu-latest

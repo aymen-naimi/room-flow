@@ -26,6 +26,7 @@ backend/.vs/
 backend/artifacts/
 backend/**/TestResults/
 backend/**/publish/
+backend/RoomFlow.Functions/local.settings.json
 *.user
 *.suo
 *.nupkg
@@ -36,3 +37,5 @@ backend/**/publish/
 
 # System files
 Thumbs.db
+func-publish/
+func.zip

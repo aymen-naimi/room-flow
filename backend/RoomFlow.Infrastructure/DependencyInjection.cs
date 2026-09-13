@@ -1,8 +1,13 @@
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Abstractions.Messaging;
 using RoomFlow.Application.Abstractions.Security;
+using RoomFlow.Infrastructure.Messaging;
 using RoomFlow.Infrastructure.Persistence;
 using RoomFlow.Infrastructure.Security;
 using System.Text;
@@ -39,7 +44,33 @@ public static class DependencyInjection
         services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
         services.AddSingleton<IRefreshTokenFactory, RefreshTokenFactory>();
         services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
+        AddBookingEmailQueue(services, configuration);
 
         return services;
+    }
+
+    private static void AddBookingEmailQueue(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<ServiceBusOptions>().Bind(configuration.GetSection(ServiceBusOptions.SectionName));
+
+        var namespaceName = configuration["ServiceBus:FullyQualifiedNamespace"];
+        var connectionString = configuration["ServiceBus:ConnectionString"];
+        if (string.IsNullOrWhiteSpace(namespaceName) && string.IsNullOrWhiteSpace(connectionString))
+        {
+            services.AddSingleton<IBookingEmailQueue, NoOpBookingEmailQueue>();
+            return;
+        }
+
+        services.AddSingleton(sp =>
+        {
+            var configured = sp.GetRequiredService<IOptions<ServiceBusOptions>>().Value;
+            if (!string.IsNullOrWhiteSpace(configured.ConnectionString))
+            {
+                return new ServiceBusClient(configured.ConnectionString);
+            }
+
+            return new ServiceBusClient(configured.FullyQualifiedNamespace, new DefaultAzureCredential());
+        });
+        services.AddSingleton<IBookingEmailQueue, ServiceBusBookingEmailQueue>();
     }
 }

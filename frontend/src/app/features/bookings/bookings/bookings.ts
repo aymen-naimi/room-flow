@@ -50,7 +50,10 @@ export const BookingsReserveHint = 'Choisissez d’abord une salle';
 export type BookingsMode = typeof BookingsRoomMode | typeof BookingsMineMode;
 
 export const BookingDeleteErrorMessage = 'Impossible d’annuler la réservation.';
-export const BookingDeleteSuccessMessage = 'Réservation annulée.';
+export const BookingDeleteSuccessMessage =
+  'Réservation annulée. Un email de confirmation vous sera envoyé.';
+export const BookingCreateSuccessMessage =
+  'Réservation confirmée. Un email de confirmation vous sera envoyé.';
 export const BookingDeleteConfirm = 'Annuler la réservation';
 
 @Component({
@@ -220,6 +223,7 @@ export class Bookings implements OnInit {
     );
 
     if (created) {
+      this.toast.success(BookingCreateSuccessMessage);
       await this.loadBookings();
     }
   }
