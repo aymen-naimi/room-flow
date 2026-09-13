@@ -19,6 +19,7 @@ import {
   BookingsDisponibilitesTitle,
   BookingsMode,
   BookingsRoomMode,
+  BookingCreateSuccessMessage,
 } from './bookings';
 import { BookingsCreateDialog } from '../bookings-create-dialog/bookings-create-dialog';
 import { bookingAdaMock, bookingOtherMock, bookingsMock } from '../bookings.mock';
@@ -58,7 +59,7 @@ describe('Bookings', () => {
 
   async function setup(
     options: {
-      confirmed?: boolean;
+      confirmed?: unknown;
       completeDefer?: boolean;
       mode?: BookingsMode;
       roomId?: string;
@@ -328,5 +329,19 @@ describe('Bookings', () => {
         }),
       }),
     );
+  });
+
+  it('shows a confirmation toast after the create dialog returns a booking', async () => {
+    const { fixture, http, toast } = await setup({ mode: 'mine', confirmed: bookingAdaMock });
+
+    const pending = fixture.componentInstance['openCreateDialog'](
+      bookingAdaMock.startsAt,
+      bookingAdaMock.endsAt,
+    );
+    const reload = await flushBookingsList(http, bookingsMock);
+    await pending;
+
+    expect(toast.success).toHaveBeenCalledWith(BookingCreateSuccessMessage);
+    expect(reload).toBeDefined();
   });
 });

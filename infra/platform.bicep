@@ -82,6 +82,21 @@ module keyVault 'modules/keyVault.bicep' = {
   }
 }
 
+resource appInsightsExisting 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsights.outputs.name
+}
+
+module bookingEmail 'modules/bookingEmail.bicep' = {
+  name: 'booking-email'
+  params: {
+    location: location
+    prefix: prefix
+    apiIdentityPrincipalId: acr.outputs.identityPrincipalId
+    deployerPrincipalId: deployerPrincipalId
+    applicationInsightsConnectionString: appInsightsExisting.properties.ConnectionString
+  }
+}
+
 output acrName string = acr.outputs.acrName
 output acrLoginServer string = acr.outputs.loginServer
 output identityId string = acr.outputs.identityId
@@ -98,3 +113,10 @@ output swaName string = swa.outputs.name
 output swaHostname string = swa.outputs.defaultHostname
 output keyVaultName string = keyVault.outputs.vaultName
 output keyVaultUri string = keyVault.outputs.vaultUri
+output serviceBusFullyQualifiedNamespace string = bookingEmail.outputs.serviceBusFullyQualifiedNamespace
+output serviceBusQueueName string = bookingEmail.outputs.serviceBusQueueName
+output functionAppName string = bookingEmail.outputs.functionAppName
+output functionStorageAccountName string = bookingEmail.outputs.functionStorageAccountName
+output functionPackageBlobUrl string = bookingEmail.outputs.functionPackageBlobUrl
+output functionReleasesContainerName string = bookingEmail.outputs.functionReleasesContainerName
+output functionPackageBlobName string = bookingEmail.outputs.functionPackageBlobName

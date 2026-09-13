@@ -29,6 +29,15 @@ param corsOrigin string
 @secure()
 param applicationInsightsConnectionString string
 
+@description('User-assigned identity client ID for DefaultAzureCredential')
+param identityClientId string
+
+@description('Service Bus fully qualified namespace, e.g. name.servicebus.windows.net')
+param serviceBusFullyQualifiedNamespace string
+
+@description('Service Bus queue name for booking emails')
+param serviceBusQueueName string
+
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
@@ -130,6 +139,18 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               secretRef: 'appinsights-connection'
+            }
+            {
+              name: 'AZURE_CLIENT_ID'
+              value: identityClientId
+            }
+            {
+              name: 'ServiceBus__FullyQualifiedNamespace'
+              value: serviceBusFullyQualifiedNamespace
+            }
+            {
+              name: 'ServiceBus__QueueName'
+              value: serviceBusQueueName
             }
           ]
           probes: [

@@ -3,6 +3,7 @@ using RoomFlow.Application.Abstractions.Data;
 using RoomFlow.Application.Concurrency;
 using RoomFlow.Application.Exceptions;
 using RoomFlow.Application.Features.Bookings.Commands.CreateBooking;
+using RoomFlow.Application.Messaging;
 using RoomFlow.Application.Tests.Fakes;
 using RoomFlow.Domain.Entities;
 
@@ -143,6 +144,38 @@ public sealed class CreateBookingCommandHandlerTests
         Assert.Equal(2, fixture.Bookings.Bookings.Select(booking => booking.RoomId).Distinct().Count());
     }
 
+    [Fact]
+    public async Task Handle_enqueues_created_email_after_booking_is_saved()
+    {
+        var fixture = CreateFixture();
+        var command = new CreateBookingCommand(fixture.Room.Id, fixture.User.Id, StartsAt, EndsAt);
+
+        var result = await fixture.Handler.Handle(command, CancellationToken.None);
+
+        var message = Assert.Single(fixture.Emails.Messages);
+        Assert.Equal(BookingEmailEventType.Created, message.EventType);
+        Assert.Equal(result.Id, message.BookingId);
+        Assert.Equal(fixture.User.Email, message.UserEmail);
+        Assert.Equal("Ada Lovelace", message.UserDisplayName);
+        Assert.Equal(fixture.Room.Name, message.RoomName);
+        Assert.Equal(StartsAt, message.StartsAt);
+        Assert.Equal(EndsAt, message.EndsAt);
+    }
+
+    [Fact]
+    public async Task Handle_creates_booking_when_email_queue_fails()
+    {
+        var fixture = CreateFixture();
+        fixture.Emails.PublishException = new InvalidOperationException("Service Bus unavailable");
+        var command = new CreateBookingCommand(fixture.Room.Id, fixture.User.Id, StartsAt, EndsAt);
+
+        var result = await fixture.Handler.Handle(command, CancellationToken.None);
+
+        Assert.Equal(fixture.Room.Id, result.RoomId);
+        Assert.Single(fixture.Bookings.Bookings);
+        Assert.Empty(fixture.Emails.Messages);
+    }
+
     private static async Task<(BookingDto? Dto, Exception? Error)> TryCreate(
         CreateBookingCommandHandler handler,
         CreateBookingCommand command)
@@ -174,6 +207,7 @@ public sealed class CreateBookingCommandHandlerTests
         };
         rooms.Rooms.Add(room);
         users.Users.Add(user);
+        var emails = new FakeBookingEmailQueue();
 
         var handler = new CreateBookingCommandHandler(
             new RoomBookingLock(),
@@ -181,15 +215,17 @@ public sealed class CreateBookingCommandHandlerTests
             users,
             bookings,
             bookings,
+            emails,
             NullLogger<CreateBookingCommandHandler>.Instance);
 
-        return new Fixture(handler, bookings, rooms, user, room);
+        return new Fixture(handler, bookings, rooms, emails, user, room);
     }
 
     private sealed record Fixture(
         CreateBookingCommandHandler Handler,
         FakeBookingStore Bookings,
         FakeRoomReadStore Rooms,
+        FakeBookingEmailQueue Emails,
         User User,
         RoomDto Room);
 }

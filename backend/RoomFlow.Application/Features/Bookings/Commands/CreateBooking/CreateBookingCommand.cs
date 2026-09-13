@@ -2,7 +2,9 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using RoomFlow.Application.Abstractions.Concurrency;
 using RoomFlow.Application.Abstractions.Data;
+using RoomFlow.Application.Abstractions.Messaging;
 using RoomFlow.Application.Exceptions;
+using RoomFlow.Application.Messaging;
 using RoomFlow.Domain.Entities;
 
 namespace RoomFlow.Application.Features.Bookings.Commands.CreateBooking;
@@ -17,6 +19,7 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
     private readonly IUserReadStore _userReadStore;
     private readonly IBookingReadStore _bookingReadStore;
     private readonly IBookingWriteStore _bookingWriteStore;
+    private readonly IBookingEmailQueue _bookingEmailQueue;
     private readonly ILogger<CreateBookingCommandHandler> _logger;
 
     public CreateBookingCommandHandler(
@@ -25,6 +28,7 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
         IUserReadStore userReadStore,
         IBookingReadStore bookingReadStore,
         IBookingWriteStore bookingWriteStore,
+        IBookingEmailQueue bookingEmailQueue,
         ILogger<CreateBookingCommandHandler> logger)
     {
         _roomLock = roomLock;
@@ -32,6 +36,7 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
         _userReadStore = userReadStore;
         _bookingReadStore = bookingReadStore;
         _bookingWriteStore = bookingWriteStore;
+        _bookingEmailQueue = bookingEmailQueue;
         _logger = logger;
     }
 
@@ -86,6 +91,16 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
                 booking.Id,
                 room.Id);
 
+            await TryPublishEmailAsync(
+                BookingEmailEventType.Created,
+                booking.Id,
+                user.Email,
+                $"{user.FirstName} {user.LastName}",
+                room.Name,
+                booking.StartsAt,
+                booking.EndsAt,
+                cancellationToken);
+
             return new BookingDto(
                 booking.Id,
                 room.Id,
@@ -94,6 +109,39 @@ public sealed class CreateBookingCommandHandler : IRequestHandler<CreateBookingC
                 $"{user.FirstName} {user.LastName}",
                 booking.StartsAt,
                 booking.EndsAt);
+        }
+    }
+
+    private async Task TryPublishEmailAsync(
+        BookingEmailEventType eventType,
+        Guid bookingId,
+        string userEmail,
+        string userDisplayName,
+        string roomName,
+        DateTimeOffset startsAt,
+        DateTimeOffset endsAt,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _bookingEmailQueue.PublishAsync(
+                new BookingEmailMessage(
+                    eventType,
+                    bookingId,
+                    userEmail,
+                    userDisplayName,
+                    roomName,
+                    startsAt,
+                    endsAt),
+                cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Failed to enqueue {EventType} email for booking {BookingId}",
+                eventType,
+                bookingId);
         }
     }
 }

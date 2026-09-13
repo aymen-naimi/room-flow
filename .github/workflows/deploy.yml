@@ -28,6 +28,11 @@ jobs:
           --configuration Release
           --nologo
           --logger GitHubActions
+      - name: Build Functions
+        run: >
+          dotnet build backend/RoomFlow.Functions/RoomFlow.Functions.csproj
+          --configuration Release
+          --nologo
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -104,6 +109,13 @@ jobs:
             echo "appInsightsName=$(jq -r '.appInsightsName.value' platform-outputs.json)"
             echo "keyVaultName=$(jq -r '.keyVaultName.value' platform-outputs.json)"
             echo "keyVaultUri=$(jq -r '.keyVaultUri.value' platform-outputs.json)"
+            echo "serviceBusFullyQualifiedNamespace=$(jq -r '.serviceBusFullyQualifiedNamespace.value' platform-outputs.json)"
+            echo "serviceBusQueueName=$(jq -r '.serviceBusQueueName.value' platform-outputs.json)"
+            echo "functionAppName=$(jq -r '.functionAppName.value' platform-outputs.json)"
+            echo "functionStorageAccountName=$(jq -r '.functionStorageAccountName.value' platform-outputs.json)"
+            echo "functionPackageBlobUrl=$(jq -r '.functionPackageBlobUrl.value' platform-outputs.json)"
+            echo "functionReleasesContainerName=$(jq -r '.functionReleasesContainerName.value' platform-outputs.json)"
+            echo "functionPackageBlobName=$(jq -r '.functionPackageBlobName.value' platform-outputs.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Seed Key Vault secrets
@@ -254,10 +266,74 @@ jobs:
               sqlDatabaseName="${{ steps.platform.outputs.sqlDatabaseName }}" \
               corsOrigin="https://${{ steps.platform.outputs.swaHostname }}" \
               appInsightsName="${{ steps.platform.outputs.appInsightsName }}" \
+              serviceBusFullyQualifiedNamespace="${{ steps.platform.outputs.serviceBusFullyQualifiedNamespace }}" \
+              serviceBusQueueName="${{ steps.platform.outputs.serviceBusQueueName }}" \
             --query properties.outputs -o json > api-outputs.json
 
           echo "apiFqdn=$(jq -r '.apiFqdn.value' api-outputs.json)" >> "$GITHUB_OUTPUT"
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish and deploy Functions
+        run: |
+          set -euo pipefail
+          FUNCTION_APP_NAME="${{ steps.platform.outputs.functionAppName }}"
+          STORAGE_ACCOUNT="${{ steps.platform.outputs.functionStorageAccountName }}"
+          CONTAINER_NAME="${{ steps.platform.outputs.functionReleasesContainerName }}"
+          BLOB_NAME="${{ steps.platform.outputs.functionPackageBlobName }}"
+          PACKAGE_URL="${{ steps.platform.outputs.functionPackageBlobUrl }}"
+
+          dotnet publish backend/RoomFlow.Functions/RoomFlow.Functions.csproj \
+            --configuration Release \
+            --output func-publish \
+            --nologo
+          python3 - <<'PY'
+          import pathlib
+          import zipfile
+          root = pathlib.Path('func-publish')
+          with zipfile.ZipFile('func.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+              for path in root.rglob('*'):
+                  if path.is_file():
+                      archive.write(path, path.relative_to(root).as_posix())
+          PY
+
+          # Wait briefly for RBAC on deployer → storage to propagate after platform deploy
+          for i in 1 2 3 4 5 6; do
+            if az storage blob upload \
+              --account-name "$STORAGE_ACCOUNT" \
+              --container-name "$CONTAINER_NAME" \
+              --name "$BLOB_NAME" \
+              --file func.zip \
+              --auth-mode login \
+              --overwrite true; then
+              break
+            fi
+            if [ "$i" -eq 6 ]; then
+              echo "Failed to upload function package after RBAC retries."
+              exit 1
+            fi
+            echo "Blob upload failed (RBAC propagation?). Retry $i/6 in 15s..."
+            sleep 15
+          done
+
+          az functionapp config appsettings set \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$FUNCTION_APP_NAME" \
+            --settings "WEBSITE_RUN_FROM_PACKAGE=$PACKAGE_URL" \
+            --output none
+
+          # Drop legacy key-based settings if still present from previous deploys
+          az functionapp config appsettings delete \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$FUNCTION_APP_NAME" \
+            --setting-names AzureWebJobsStorage WEBSITE_CONTENTAZUREFILECONNECTIONSTRING \
+            --output none || true
+
+          az functionapp sync-function-triggers \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$FUNCTION_APP_NAME"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
