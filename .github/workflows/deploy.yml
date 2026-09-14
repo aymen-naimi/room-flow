@@ -331,9 +331,26 @@ jobs:
             --setting-names AzureWebJobsStorage WEBSITE_CONTENTAZUREFILECONNECTIONSTRING \
             --output none || true
 
+          echo "Restarting Function App to load the new package..."
+          az functionapp restart \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$FUNCTION_APP_NAME"
+
+          # Best-effort trigger sync; host may not be ready immediately after restart
           SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-          az rest --method post \
-            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/sites/${FUNCTION_APP_NAME}/syncfunctiontriggers?api-version=2022-03-01"
+          SYNC_URL="https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/sites/${FUNCTION_APP_NAME}/syncfunctiontriggers?api-version=2022-03-01"
+          for i in 1 2 3 4 5; do
+            if az rest --method post --url "$SYNC_URL" --output none 2>/dev/null; then
+              echo "Function triggers synced."
+              break
+            fi
+            if [ "$i" -eq 5 ]; then
+              echo "Sync triggers skipped (host not ready); Service Bus trigger should register on next cold start."
+            else
+              echo "Sync triggers not ready (attempt $i/5), waiting 30s..."
+              sleep 30
+            fi
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
