@@ -86,6 +86,8 @@ module bookingEmail 'modules/bookingEmail.bicep' = {
   name: 'booking-email'
   params: {
     location: location
+    // Y1 Consumption quota unavailable in northeurope for this subscription
+    functionLocation: 'westus2'
     prefix: prefix
     apiIdentityPrincipalId: acr.outputs.identityPrincipalId
     deployerPrincipalId: deployerPrincipalId

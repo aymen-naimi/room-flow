@@ -1,5 +1,8 @@
-@description('Azure region')
+@description('Azure region for Service Bus and related regional resources')
 param location string
+
+@description('Azure region for Function App, plan, identity and host storage (Y1 quota)')
+param functionLocation string = location
 
 @description('Name prefix')
 param prefix string
@@ -15,14 +18,15 @@ param deployerPrincipalId string
 param applicationInsightsConnectionString string
 
 var unique = uniqueString(resourceGroup().id)
+var functionUnique = uniqueString(resourceGroup().id, functionLocation)
 var serviceBusNamespaceName = take(toLower('${prefix}-sb-${unique}'), 50)
 var queueName = 'booking-events'
 var emailServiceName = take(toLower('${prefix}-email-${unique}'), 63)
 var communicationServiceName = take(toLower('${prefix}-acs-${unique}'), 63)
-var storageName = take('st${prefix}${unique}', 24)
-var functionPlanName = take('${prefix}-func-plan-${unique}', 40)
-var functionAppName = take(toLower('${prefix}-func-${unique}'), 60)
-var functionIdentityName = take('${prefix}-func-id-${unique}', 64)
+var storageName = take('st${prefix}${functionUnique}', 24)
+var functionPlanName = take('${prefix}-func-plan-${functionUnique}', 40)
+var functionAppName = take(toLower('${prefix}-func-${functionUnique}'), 60)
+var functionIdentityName = take('${prefix}-func-id-${functionUnique}', 64)
 var functionReleasesContainerName = 'function-releases'
 var functionPackageBlobName = 'latest.zip'
 var functionPackageBlobUrl = 'https://${storageName}.blob.${az.environment().suffixes.storage}/${functionReleasesContainerName}/${functionPackageBlobName}'
@@ -59,7 +63,7 @@ var storageTableDataContributorRoleId = subscriptionResourceId(
 
 resource functionIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: functionIdentityName
-  location: location
+  location: functionLocation
 }
 
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
@@ -146,7 +150,7 @@ resource functionEmailRole 'Microsoft.Authorization/roleAssignments@2022-04-01' 
 
 resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageName
-  location: location
+  location: functionLocation
   sku: {
     name: 'Standard_LRS'
   }
@@ -215,7 +219,7 @@ resource deployerStorageBlobContributorRole 'Microsoft.Authorization/roleAssignm
 
 resource functionPlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: functionPlanName
-  location: location
+  location: functionLocation
   kind: 'functionapp'
   sku: {
     name: 'Y1'
@@ -228,7 +232,7 @@ resource functionPlan 'Microsoft.Web/serverfarms@2023-12-01' = {
 
 resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   name: functionAppName
-  location: location
+  location: functionLocation
   kind: 'functionapp,linux'
   identity: {
     type: 'UserAssigned'
