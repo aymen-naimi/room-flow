@@ -46,7 +46,7 @@ var communicationEmailOwnerRoleId = subscriptionResourceId(
 )
 var storageBlobDataOwnerRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
-  'b7e6dc6d-84e0-44d3-a4f9-ebe6d4f5c0ab'
+  'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
 )
 var storageBlobDataContributorRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
