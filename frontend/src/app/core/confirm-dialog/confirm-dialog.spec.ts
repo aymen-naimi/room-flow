@@ -35,6 +35,7 @@ describe('ConfirmDialog', () => {
 
     expect(confirm?.textContent).toContain('Supprimer');
     expect(confirm?.classList.contains('confirm-dialog__confirm--destructive')).toBe(true);
+    expect(nativeElement.querySelector('button')?.textContent).toContain('Annuler');
   });
 
   it('keeps the confirm button neutral without destructive', async () => {

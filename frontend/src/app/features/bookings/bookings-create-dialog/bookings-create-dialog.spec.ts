@@ -185,4 +185,15 @@ describe('BookingsCreateDialog', () => {
     expect(close).toHaveBeenCalledWith(bookingAdaMock);
     http.verify();
   });
+
+  it('labels start and end time fields uniquely', async () => {
+    const { fixture } = await setup();
+
+    expect(fixture.nativeElement.textContent).toContain('Début');
+    expect(fixture.nativeElement.textContent).toContain('Fin');
+    expect(fixture.nativeElement.textContent).toContain('Heure de début');
+    expect(fixture.nativeElement.textContent).toContain('Minutes de début');
+    expect(fixture.nativeElement.textContent).toContain('Heure de fin');
+    expect(fixture.nativeElement.textContent).toContain('Minutes de fin');
+  });
 });

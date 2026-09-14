@@ -4,11 +4,12 @@
   }
 
   @if (isLoading()) {
-    <p class="page__status">Chargement des salles…</p>
+    <p class="page__status" role="status" aria-live="polite">Chargement des salles…</p>
   } @else if (hasError()) {
-    <p class="page__status page__status--error">Impossible de charger les salles.</p>
+    <p class="page__status page__status--error" role="alert">Impossible de charger les salles.</p>
   } @else if (hasRooms()) {
-    <table class="rooms__table">
+    <h2 id="rooms-list-heading" class="rooms__caption">Liste des salles</h2>
+    <table class="rooms__table" aria-labelledby="rooms-list-heading">
       <thead>
         <tr class="rooms__row">
           <th class="rooms__heading">Nom</th>
@@ -33,7 +34,7 @@
                 aria-label="Voir le planning"
                 matTooltip="Voir le planning"
               >
-                <mat-icon>event</mat-icon>
+                <mat-icon aria-hidden="true">event</mat-icon>
               </a>
               @if (isAdmin()) {
                 <button
@@ -45,7 +46,7 @@
                   [disabled]="isDeleting()"
                   (click)="onDelete(room)"
                 >
-                  <mat-icon>delete</mat-icon>
+                  <mat-icon aria-hidden="true">delete</mat-icon>
                 </button>
               }
             </td>

@@ -7,11 +7,12 @@ import {
   EventDisplayInfo,
   EventInput,
   FullCalendarModule,
+  MountInfo,
   SlotHeaderInfo,
   SlotLaneInfo,
 } from '@fullcalendar/angular';
 import { AuthService } from '../../../core/auth/auth.service';
-import { isBookingDayStart, roomTone, toUtcIso } from '../bookings.helpers';
+import { bookingEventAriaLabel, isBookingDayStart, roomTone, toUtcIso } from '../bookings.helpers';
 import { BookingsCalendarBaseOptions } from './bookings-calendar.options';
 
 @Component({
@@ -41,10 +42,23 @@ export class BookingsCalendar {
       this.eventClick.emit(info);
     },
     eventClass: (arg: EventDisplayInfo) => this.eventClassNames(arg.event.extendedProps).join(' '),
+    eventDidMount: (info: MountInfo<EventDisplayInfo>) => this.setEventAriaLabel(info),
     slotLaneClass: (arg: SlotLaneInfo) => this.slotStartClass(arg.date),
     slotHeaderClass: (arg: SlotHeaderInfo) => this.slotStartClass(arg.date),
     selectAllow: (span) => this.isFuture(span.start),
   };
+
+  private setEventAriaLabel(info: MountInfo<EventDisplayInfo>): void {
+    const start = info.event.start;
+    const end = info.event.end;
+    if (!start || !end) {
+      return;
+    }
+
+    const mine = Boolean(info.event.extendedProps['mine']);
+    const name = String(info.event.extendedProps['ariaName'] ?? info.event.title);
+    info.el.setAttribute('aria-label', bookingEventAriaLabel(mine, name, start, end));
+  }
 
   private eventClassNames(extendedProps: Record<string, unknown>): string[] {
     const currentUserId = this.auth.currentUser()?.id;

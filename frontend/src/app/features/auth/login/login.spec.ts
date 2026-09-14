@@ -56,6 +56,13 @@ describe('Login', () => {
     http.verify();
   });
 
+  it('exposes a main landmark and a page heading', async () => {
+    const { fixture } = await setup();
+
+    expect(fixture.nativeElement.querySelector('main#contenu')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Connexion');
+  });
+
   it('shows invalid credentials on 401', async () => {
     const { fixture, http } = await setup();
     fillAndSubmit(fixture);

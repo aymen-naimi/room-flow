@@ -4,7 +4,7 @@
       @if (isRoomMode()) {
         <mat-form-field class="bookings__room" appearance="outline" subscriptSizing="dynamic">
           <mat-label>Salle</mat-label>
-          <mat-icon class="bookings__room-icon" matPrefix>meeting_room</mat-icon>
+          <mat-icon class="bookings__room-icon" matPrefix aria-hidden="true">meeting_room</mat-icon>
           <mat-select
             placeholder="Choisir une salle"
             [value]="selectedRoomId()"
@@ -24,7 +24,7 @@
           [disabled]="isReserveDisabled()"
           (click)="openReserveDialog()"
         >
-          <mat-icon>event</mat-icon>
+          <mat-icon aria-hidden="true">event</mat-icon>
           Réserver
         </button>
       </span>
@@ -32,9 +32,9 @@
   }
 
   @if (isLoading()) {
-    <p class="page__status">Chargement du planning…</p>
+    <p class="page__status" role="status" aria-live="polite">Chargement du planning…</p>
   } @else if (hasError()) {
-    <p class="page__status page__status--error">Impossible de charger le planning.</p>
+    <p class="page__status page__status--error" role="alert">Impossible de charger le planning.</p>
   } @else if (!hasRooms()) {
     <p class="page__status">
       Aucune salle pour le moment.
@@ -42,7 +42,7 @@
     </p>
   } @else if (isRoomMode() && !selectedRoomId()) {
     <div class="bookings__empty">
-      <mat-icon class="bookings__empty-icon">meeting_room</mat-icon>
+      <mat-icon class="bookings__empty-icon" aria-hidden="true">meeting_room</mat-icon>
       <p class="bookings__empty-title">Choisissez une salle</p>
       <p class="bookings__empty-text">Sélectionnez une salle ci-dessus pour afficher son planning.</p>
     </div>
@@ -55,7 +55,7 @@
         (eventClick)="onEventClick($event)"
       />
     } @placeholder {
-      <p class="page__status">Chargement du planning…</p>
+      <p class="page__status" role="status" aria-live="polite">Chargement du planning…</p>
     }
   }
 </app-page>

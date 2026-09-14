@@ -59,5 +59,9 @@
 
   &__link {
     color: tokens.$color-primary;
+
+    &:focus-visible {
+      text-decoration: underline;
+    }
   }
 }

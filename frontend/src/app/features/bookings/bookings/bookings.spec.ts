@@ -20,6 +20,7 @@ import {
   BookingsMode,
   BookingsRoomMode,
   BookingCreateSuccessMessage,
+  BookingMineTitlePrefix,
 } from './bookings';
 import { BookingsCreateDialog } from '../bookings-create-dialog/bookings-create-dialog';
 import { bookingAdaMock, bookingOtherMock, bookingsMock } from '../bookings.mock';
@@ -181,7 +182,10 @@ describe('Bookings', () => {
     const events = fixture.componentInstance['events']();
     expect(events.some((event) => event.id === bookingAdaMock.id)).toBe(true);
     expect(events.find((event) => event.id === bookingAdaMock.id)?.title).toBe(
-      bookingAdaMock.userDisplayName,
+      `${BookingMineTitlePrefix}${bookingAdaMock.userDisplayName}`,
+    );
+    expect(events.find((event) => event.id === bookingOtherMock.id)?.title).toBe(
+      bookingOtherMock.userDisplayName,
     );
     expect(bookingsRequest?.request.params.get('roomId')).toBe(roomHorizonMock.id);
     http.verify();
@@ -225,6 +229,10 @@ describe('Bookings', () => {
     expect(
       fixture.componentInstance['events']().find((event) => event.id === bookingAdaMock.id)?.title,
     ).toBe(`${bookingAdaMock.roomName} (${roomHorizonMock.capacity} places)`);
+    expect(
+      fixture.componentInstance['events']().find((event) => event.id === bookingAdaMock.id)
+        ?.extendedProps?.['mine'],
+    ).toBe(true);
     http.verify();
   });
 

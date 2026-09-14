@@ -254,6 +254,24 @@ export function roomCapacityLabel(name: string, capacity?: number): string {
   return capacity == null ? name : `${name} (${capacity} places)`;
 }
 
+export function formatParisHm(value: Date): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: BOOKING_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(value);
+  const map = Object.fromEntries(
+    parts.filter((part) => part.type !== 'literal').map((part) => [part.type, part.value]),
+  );
+  return `${map['hour']}:${map['minute']}`;
+}
+
+export function bookingEventAriaLabel(mine: boolean, name: string, start: Date, end: Date): string {
+  const range = `${formatParisHm(start)}–${formatParisHm(end)}`;
+  return mine ? `Vous, ${name}, ${range}` : `${name}, ${range}`;
+}
+
 export function roomTone(roomId: string): number {
   let hash = 0;
   for (const char of roomId) {

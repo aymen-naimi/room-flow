@@ -37,6 +37,24 @@ body {
   background: tokens.$color-surface;
 }
 
+a:focus-visible:not([matButton], [matIconButton]) {
+  outline: 2px solid tokens.$color-primary;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .bookings__calendar,
+  .bookings__calendar * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .snackbar--error,
 .snackbar--success,
 .snackbar--info {

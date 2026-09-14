@@ -1,4 +1,5 @@
 <div class="main-layout">
+  <a class="main-layout__skip" href="#contenu">Aller au contenu</a>
   <header class="main-layout__header">
     <a class="main-layout__brand" routerLink="/in/my-bookings">
       <img class="main-layout__logo" src="room-flow.ico" width="36" height="36" alt="Room Flow" />
@@ -8,18 +9,22 @@
         class="main-layout__link"
         routerLink="/in/my-bookings"
         routerLinkActive="main-layout__link--active"
+        ariaCurrentWhenActive="page"
         >Agenda</a
       >
       <a
         class="main-layout__link"
         routerLink="/in/bookings"
         routerLinkActive="main-layout__link--active"
+        ariaCurrentWhenActive="page"
         >Disponibilités</a
       >
       <a
         class="main-layout__link"
         routerLink="/in/rooms"
         routerLinkActive="main-layout__link--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
         >Salles</a
       >
     </nav>
@@ -28,7 +33,7 @@
     }
     <button matButton type="button" (click)="logout()">Déconnexion</button>
   </header>
-  <main class="main-layout__main">
+  <main id="contenu" class="main-layout__main" tabindex="-1">
     <router-outlet />
   </main>
 </div>
