@@ -8,10 +8,13 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 
+export const ConfirmDialogCancelLabel = 'Annuler';
+
 export interface ConfirmDialogData {
   title: string;
   message: string;
   confirmLabel: string;
+  cancelLabel?: string;
   destructive?: boolean;
 }
 
@@ -26,6 +29,7 @@ export class ConfirmDialog {
   private readonly dialogRef = inject(MatDialogRef<ConfirmDialog, boolean>);
 
   protected readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
+  protected readonly cancelLabel = this.data.cancelLabel ?? ConfirmDialogCancelLabel;
 
   protected cancel(): void {
     this.dialogRef.close(false);

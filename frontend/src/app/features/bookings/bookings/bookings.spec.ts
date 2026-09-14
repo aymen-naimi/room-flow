@@ -13,6 +13,8 @@ import { Toast } from '../../../core/toast';
 import { Room } from '../../rooms/rooms.model';
 import { roomHorizonMock, roomsMock } from '../../rooms/rooms.mock';
 import {
+  BookingDeleteConfirm,
+  BookingDeleteKeep,
   BookingDeleteSuccessMessage,
   Bookings,
   BookingsAgendaTitle,
@@ -250,7 +252,11 @@ describe('Bookings', () => {
     expect(openDialog).toHaveBeenCalledWith(
       ConfirmDialog,
       expect.objectContaining({
-        data: expect.objectContaining({ destructive: true }),
+        data: expect.objectContaining({
+          destructive: true,
+          confirmLabel: BookingDeleteConfirm,
+          cancelLabel: BookingDeleteKeep,
+        }),
       }),
     );
 

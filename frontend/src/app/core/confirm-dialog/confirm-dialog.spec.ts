@@ -38,6 +38,18 @@ describe('ConfirmDialog', () => {
     expect(nativeElement.querySelector('button')?.textContent).toContain('Annuler');
   });
 
+  it('uses a custom cancel label when provided', async () => {
+    const { nativeElement } = await setup({
+      title: 'Annuler la réservation',
+      message: 'Annuler « Jane Doe » ?',
+      confirmLabel: 'Annuler la réservation',
+      cancelLabel: 'Garder la réservation',
+      destructive: true,
+    });
+
+    expect(nativeElement.querySelector('button')?.textContent).toContain('Garder la réservation');
+  });
+
   it('keeps the confirm button neutral without destructive', async () => {
     const { nativeElement } = await setup({
       title: 'Confirmer',

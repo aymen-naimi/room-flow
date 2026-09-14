@@ -55,6 +55,7 @@ export const BookingDeleteSuccessMessage =
 export const BookingCreateSuccessMessage =
   'Réservation confirmée. Un email de confirmation vous sera envoyé.';
 export const BookingDeleteConfirm = 'Annuler la réservation';
+export const BookingDeleteKeep = 'Garder la réservation';
 export const BookingMineTitlePrefix = 'Vous · ';
 
 @Component({
@@ -246,6 +247,7 @@ export class Bookings implements OnInit {
               title: BookingDeleteConfirm,
               message: `Annuler « ${info.event.title} » ?`,
               confirmLabel: BookingDeleteConfirm,
+              cancelLabel: BookingDeleteKeep,
               destructive: true,
             },
           })

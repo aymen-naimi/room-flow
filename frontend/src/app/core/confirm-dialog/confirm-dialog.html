@@ -2,7 +2,7 @@
   <h2 class="confirm-dialog__title" mat-dialog-title>{{ data.title }}</h2>
   <p class="confirm-dialog__message" mat-dialog-content>{{ data.message }}</p>
   <div class="confirm-dialog__actions" mat-dialog-actions align="center">
-    <button matButton type="button" (click)="cancel()">Annuler</button>
+    <button matButton type="button" (click)="cancel()">{{ cancelLabel }}</button>
     <button
       class="confirm-dialog__confirm"
       [class.confirm-dialog__confirm--destructive]="data.destructive"
