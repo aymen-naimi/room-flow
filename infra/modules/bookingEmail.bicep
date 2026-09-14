@@ -54,7 +54,7 @@ var storageBlobDataContributorRoleId = subscriptionResourceId(
 )
 var storageQueueDataContributorRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
-  '974c5e8b-45b9-4653-9b13-2a4ce91b0b2c'
+  '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
 )
 var storageTableDataContributorRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
