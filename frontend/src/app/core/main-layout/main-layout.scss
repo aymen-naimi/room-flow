@@ -5,7 +5,36 @@
 }
 
 .main-layout {
+  position: relative;
   min-height: 100dvh;
+
+  &__skip {
+    position: absolute;
+    z-index: 2;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    background: tokens.$color-surface;
+    color: tokens.$color-text;
+
+    &:focus {
+      width: auto;
+      height: auto;
+      margin: 0;
+      padding: 0.5rem 0.75rem;
+      clip: auto;
+      overflow: visible;
+      left: 1rem;
+      top: 1rem;
+      outline: 2px solid tokens.$color-primary;
+      outline-offset: 2px;
+    }
+  }
 
   &__header {
     display: flex;
@@ -43,6 +72,9 @@
 
     &--active {
       color: tokens.$color-primary;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
     }
   }
 

@@ -55,6 +55,7 @@ export const BookingDeleteSuccessMessage =
 export const BookingCreateSuccessMessage =
   'Réservation confirmée. Un email de confirmation vous sera envoyé.';
 export const BookingDeleteConfirm = 'Annuler la réservation';
+export const BookingMineTitlePrefix = 'Vous · ';
 
 @Component({
   selector: 'app-bookings',
@@ -265,16 +266,21 @@ export class Bookings implements OnInit {
   }
 
   private toEvent(booking: Booking): EventInput {
+    const currentUserId = this.auth.currentUser()?.id;
+    const mine = currentUserId !== undefined && booking.userId === currentUserId;
+    const baseTitle = this.isRoomMode()
+      ? booking.userDisplayName
+      : roomCapacityLabel(booking.roomName, this.roomCapacity(booking.roomId));
     return {
       id: booking.id,
-      title: this.isRoomMode()
-        ? booking.userDisplayName
-        : roomCapacityLabel(booking.roomName, this.roomCapacity(booking.roomId)),
+      title: mine && this.isRoomMode() ? `${BookingMineTitlePrefix}${baseTitle}` : baseTitle,
       start: booking.startsAt,
       end: booking.endsAt,
       extendedProps: {
         userId: booking.userId,
         roomId: booking.roomId,
+        mine,
+        ariaName: baseTitle,
       },
     };
   }

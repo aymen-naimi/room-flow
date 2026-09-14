@@ -82,6 +82,12 @@ describe('RoomsList', () => {
     expect(fixture.nativeElement.querySelector('.rooms__planning').getAttribute('href')).toBe(
       `/in/bookings/${roomsMock[0].id}`,
     );
+    expect(fixture.nativeElement.querySelector('.rooms__caption').textContent).toContain(
+      'Liste des salles',
+    );
+    expect(fixture.nativeElement.querySelector('.rooms__table').getAttribute('aria-labelledby')).toBe(
+      'rooms-list-heading',
+    );
     expect(fixture.nativeElement.querySelector('.rooms__planning').getAttribute('aria-label')).toBe(
       'Voir le planning',
     );

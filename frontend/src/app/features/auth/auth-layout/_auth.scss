@@ -18,6 +18,10 @@
     max-width: 24rem;
   }
 
+  &__heading {
+    margin: 0;
+  }
+
   &__form {
     display: flex;
     flex-direction: column;
@@ -40,7 +44,8 @@
     color: tokens.$color-primary;
     text-decoration: none;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
       text-decoration: underline;
     }
   }

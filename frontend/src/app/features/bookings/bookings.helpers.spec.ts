@@ -9,6 +9,7 @@ import {
   roomTone,
   toUtcIso,
   toUtcIsoFromParisLocal,
+  bookingEventAriaLabel,
 } from './bookings.helpers';
 
 describe('booking helpers', () => {
@@ -32,6 +33,25 @@ describe('booking helpers', () => {
   it('appends capacity to a room name', () => {
     expect(roomCapacityLabel('Salle A', 7)).toBe('Salle A (7 places)');
     expect(roomCapacityLabel('Salle A')).toBe('Salle A');
+  });
+
+  it('builds an event aria-label with Paris times', () => {
+    expect(
+      bookingEventAriaLabel(
+        true,
+        'Jane Doe',
+        new Date('2026-08-28T08:00:00.000Z'),
+        new Date('2026-08-28T09:00:00.000Z'),
+      ),
+    ).toBe('Vous, Jane Doe, 10:00–11:00');
+    expect(
+      bookingEventAriaLabel(
+        false,
+        'Bob Martin',
+        new Date('2026-08-28T08:00:00.000Z'),
+        new Date('2026-08-28T09:00:00.000Z'),
+      ),
+    ).toBe('Bob Martin, 10:00–11:00');
   });
 
   it('converts a Paris local wall time to UTC ISO across DST', () => {

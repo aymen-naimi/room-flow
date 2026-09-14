@@ -9,6 +9,19 @@ describe('routes', () => {
     expect(emptyChild?.redirectTo).toBe('my-bookings');
   });
 
+  it('declares page titles on guest and in-app routes', () => {
+    const inRoute = routes.find((route) => route.path === 'in');
+    const childTitle = (path: string) => inRoute?.children?.find((route) => route.path === path)?.title;
+
+    expect(routes.find((route) => route.path === 'login')?.title).toBe('Connexion');
+    expect(routes.find((route) => route.path === 'register')?.title).toBe('Créer un compte');
+    expect(childTitle('bookings')).toBe('Disponibilités');
+    expect(childTitle('bookings/:roomId')).toBe('Disponibilités');
+    expect(childTitle('my-bookings')).toBe('Agenda');
+    expect(childTitle('rooms')).toBe('Salles');
+    expect(childTitle('rooms/new')).toBe('Ajouter une salle');
+  });
+
   it('declares bookings under /in as room mode', () => {
     const inRoute = routes.find((route) => route.path === 'in');
     const bookingsChild = inRoute?.children?.find((route) => route.path === 'bookings');

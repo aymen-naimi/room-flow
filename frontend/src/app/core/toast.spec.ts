@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { vi } from 'vitest';
-import { Toast } from './toast';
+import { Toast, ToastDismissLabel } from './toast';
 
 describe('Toast', () => {
   function setup(): { toast: Toast; snackBar: { open: ReturnType<typeof vi.fn> } } {
@@ -19,7 +19,7 @@ describe('Toast', () => {
 
     toast.error('Impossible de supprimer la salle.');
 
-    expect(snackBar.open).toHaveBeenCalledWith('Impossible de supprimer la salle.', '✕', {
+    expect(snackBar.open).toHaveBeenCalledWith('Impossible de supprimer la salle.', ToastDismissLabel, {
       duration: 4000,
       panelClass: 'snackbar--error',
       verticalPosition: 'top',
@@ -32,7 +32,7 @@ describe('Toast', () => {
 
     toast.success('Salle supprimée.');
 
-    expect(snackBar.open).toHaveBeenCalledWith('Salle supprimée.', '✕', {
+    expect(snackBar.open).toHaveBeenCalledWith('Salle supprimée.', ToastDismissLabel, {
       duration: 4000,
       panelClass: 'snackbar--success',
       verticalPosition: 'top',

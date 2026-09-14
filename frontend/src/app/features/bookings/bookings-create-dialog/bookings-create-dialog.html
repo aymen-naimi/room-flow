@@ -13,11 +13,11 @@
       </mat-form-field>
 
       <div class="bookings-create__times">
-        <div class="bookings-create__slot">
-          <p class="bookings-create__slot-label">Début</p>
+        <fieldset class="bookings-create__slot">
+          <legend class="bookings-create__slot-label">Début</legend>
           <div class="bookings-create__slot-fields">
             <mat-form-field appearance="outline">
-              <mat-label>Heure</mat-label>
+              <mat-label>Heure de début</mat-label>
               <mat-select formControlName="startHour">
                 @for (hour of hours; track hour) {
                   <mat-option [value]="hour">{{ padTime(hour) }}</mat-option>
@@ -25,7 +25,7 @@
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>Minutes</mat-label>
+              <mat-label>Minutes de début</mat-label>
               <mat-select formControlName="startMinute">
                 @for (minute of minutesFor(form.controls.startHour.value); track minute) {
                   <mat-option [value]="minute">{{ padTime(minute) }}</mat-option>
@@ -33,12 +33,12 @@
               </mat-select>
             </mat-form-field>
           </div>
-        </div>
-        <div class="bookings-create__slot">
-          <p class="bookings-create__slot-label">Fin</p>
+        </fieldset>
+        <fieldset class="bookings-create__slot">
+          <legend class="bookings-create__slot-label">Fin</legend>
           <div class="bookings-create__slot-fields">
             <mat-form-field appearance="outline">
-              <mat-label>Heure</mat-label>
+              <mat-label>Heure de fin</mat-label>
               <mat-select formControlName="endHour">
                 @for (hour of hours; track hour) {
                   <mat-option [value]="hour">{{ padTime(hour) }}</mat-option>
@@ -46,7 +46,7 @@
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>Minutes</mat-label>
+              <mat-label>Minutes de fin</mat-label>
               <mat-select formControlName="endMinute">
                 @for (minute of minutesFor(form.controls.endHour.value); track minute) {
                   <mat-option [value]="minute">{{ padTime(minute) }}</mat-option>
@@ -54,7 +54,7 @@
               </mat-select>
             </mat-form-field>
           </div>
-        </div>
+        </fieldset>
       </div>
 
       @if (form.hasError('range')) {

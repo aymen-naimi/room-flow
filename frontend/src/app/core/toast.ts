@@ -1,6 +1,8 @@
 import { inject, Service } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+export const ToastDismissLabel = 'Fermer';
+
 @Service()
 export class Toast {
   private readonly snackBar = inject(MatSnackBar);
@@ -18,7 +20,7 @@ export class Toast {
   }
 
   private show(message: string, panelClass: string): void {
-    this.snackBar.open(message, '✕', {
+    this.snackBar.open(message, ToastDismissLabel, {
       duration: 4000,
       panelClass,
       verticalPosition: 'top',
