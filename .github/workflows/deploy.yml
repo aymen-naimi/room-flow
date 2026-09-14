@@ -331,9 +331,9 @@ jobs:
             --setting-names AzureWebJobsStorage WEBSITE_CONTENTAZUREFILECONNECTIONSTRING \
             --output none || true
 
-          az functionapp sync-function-triggers \
-            --resource-group "$AZURE_RESOURCE_GROUP" \
-            --name "$FUNCTION_APP_NAME"
+          SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+          az rest --method post \
+            --url "https://management.azure.com/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/sites/${FUNCTION_APP_NAME}/syncfunctiontriggers?api-version=2022-03-01"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
